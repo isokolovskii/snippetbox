@@ -1,0 +1,17 @@
+assert_lefthook_installed: true
+colors: true
+
+output:
+  - success
+  - failure
+  - execution
+  - execution_out
+
+commit-msg:
+  parallel: false
+  commands:
+    conform:
+      skip:
+        - merge
+        - rebase
+      run: go tool conform enforce --commit-msg-file {1}
