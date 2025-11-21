@@ -33,6 +33,6 @@ post-checkout:
   parallel: false
   commands:
     install-hooks:
-      files: git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD
+      files: if [ "{3}" = "1" ]; then git diff --name-only {1} {2}; fi
       glob: "lefthook.yml"
       run: go tool lefthook install
