@@ -11,3 +11,24 @@ services:
       - ADDR=:4000
       - STATIC_DIR=./ui/static/
       - DEBUG=true
+      - DB_DSN=web:pass@tcp(mysql:3306)/snippetbox?parseTime=true
+    depends_on:
+      - mysql
+    networks:
+      - snippetbox-net
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d
+    networks:
+      - snippetbox-net
+
+networks:
+  snippetbox-net:
+    driver: bridge
