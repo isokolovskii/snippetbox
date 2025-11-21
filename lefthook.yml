@@ -19,7 +19,20 @@ commit-msg:
 pre-commit:
   parallel: true
   commands:
+    install:
+      run: go tool lefthook install
+      glob: "lefthook.yml"
     tidy:
       run: go mod tidy
+      stage_fixed: true
     format:
       run: go fmt ./...
+      stage_fixed: true
+
+post-checkout:
+  parallel: false
+  commands:
+    install-hooks:
+      files: git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD
+      glob: "lefthook.yml"
+      run: go tool lefthook install
