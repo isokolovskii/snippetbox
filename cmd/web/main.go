@@ -1,11 +1,13 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 type application struct {
@@ -14,28 +16,43 @@ type application struct {
 }
 
 func main() {
-	addr := flag.String("addr", ":4000", "HTTP network address")
-	staticDir := flag.String("static-dir", "./ui/static/", "Path to UI static files")
-	debug := flag.Bool("debug", false, "Run in debug mode")
+	err := godotenv.Load()
+	if err != nil {
+		slog.Warn("Error loading .env file, using defaults or existing environment variables")
+	}
 
-	flag.Parse()
+	addr := os.Getenv("ADDR")
+	if addr == "" {
+		addr = ":4000"
+	}
+
+	staticDir := os.Getenv("STATIC_DIR")
+	if staticDir == "" {
+		staticDir = "./ui/static/"
+	}
+
+	debugStr := os.Getenv("DEBUG")
+	debug, err := strconv.ParseBool(debugStr)
+	if err != nil {
+		debug = false
+	}
 
 	level := slog.LevelInfo
 
-	if *debug {
+	if debug {
 		level = slog.LevelDebug
 	}
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level, AddSource: *debug}))
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level, AddSource: debug}))
 
 	app := &application{
 		logger: logger,
-		debug:  *debug,
+		debug:  debug,
 	}
 
-	logger.Info("starting server", "addr", *addr)
+	logger.Info("starting server", "addr", addr)
 
-	err := http.ListenAndServe(*addr, app.routes(*staticDir))
+	err = http.ListenAndServe(addr, app.routes(staticDir))
 	logger.Error(err.Error())
 	os.Exit(1)
 }
