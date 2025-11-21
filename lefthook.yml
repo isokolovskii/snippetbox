@@ -15,3 +15,11 @@ commit-msg:
         - merge
         - rebase
       run: go tool conform enforce --commit-msg-file {1}
+
+pre-commit:
+  parallel: true
+  commands:
+    tidy:
+      run: go mod tidy
+    format:
+      run: go fmt ./...
