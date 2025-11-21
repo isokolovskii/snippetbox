@@ -9,4 +9,4 @@ lefthook.yml
 .go-version
 .env
 .env.example
-xw
+db

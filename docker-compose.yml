@@ -5,8 +5,19 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "4000:4000"
-    volumes:
-      - .:/app
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+        - action: rebuild
+          path: go.mod
+        - action: rebuild
+          path: go.sum
+        - action: rebuild
+          path: Dockerfile.dev
+        - action: rebuild
+          path: .dockerignore
     environment:
       - ADDR=:4000
       - STATIC_DIR=./ui/static/
