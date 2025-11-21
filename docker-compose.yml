@@ -1,0 +1,13 @@
+services:
+  snippetbox:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/app
+    environment:
+      - ADDR=:4000
+      - STATIC_DIR=./ui/static/
+      - DEBUG=true

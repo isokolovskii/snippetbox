@@ -1,0 +1,12 @@
+.git
+.gitignore
+.DS_Store
+tmp
+*.log
+tmp
+lefthook.yml
+.conform.yaml
+.go-version
+.env
+.env.example
+xw
