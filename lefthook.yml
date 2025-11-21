@@ -9,30 +9,38 @@ output:
 
 commit-msg:
   parallel: false
-  commands:
-    conform:
+  jobs:
+    - name: conform
+      run: go tool conform enforce --commit-msg-file {1}
       skip:
         - merge
         - rebase
-      run: go tool conform enforce --commit-msg-file {1}
 
 pre-commit:
-  parallel: true
-  commands:
-    install:
-      run: go tool lefthook install
-      glob: "lefthook.yml"
-    tidy:
-      run: go mod tidy
-      stage_fixed: true
-    format:
-      run: go fmt ./...
-      stage_fixed: true
+  parallel: false
+  jobs:
+    - name: lefthook install
+      group:
+        parallel: false
+        jobs:
+          - name: install
+            run: go tool lefthook install
+            glob: "lefthook.yml"
+    - name: validate repo
+      group:
+        parallel: false
+        jobs:
+          - name: tidy
+            run: go mod tidy
+            stage_fixed: true
+          - name: format
+            run: go fmt ./...
+            stage_fixed: true
 
 post-checkout:
   parallel: false
-  commands:
-    install-hooks:
+  jobs:
+    - name: install
+      run: go tool lefthook install
       files: if [ "{3}" = "1" ]; then git diff --name-only {1} {2}; fi
       glob: "lefthook.yml"
-      run: go tool lefthook install
