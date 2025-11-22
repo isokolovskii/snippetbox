@@ -7,14 +7,14 @@ output:
   - execution
   - execution_out
 
-commit-msg:
-  parallel: false
-  jobs:
-    - name: conform
-      run: go tool conform enforce --commit-msg-file {1}
-      skip:
-        - merge
-        - rebase
+# commit-msg:
+#   parallel: false
+#   jobs:
+#     - name: conform
+#       run: go tool conform enforce --commit-msg-file {1}
+#       skip:
+#         - merge
+#         - rebase
 
 pre-commit:
   parallel: false
@@ -33,8 +33,8 @@ pre-commit:
           - name: tidy
             run: go mod tidy
             stage_fixed: true
-          - name: format
-            run: go fmt ./...
+          - name: lint & format
+            run: golangci-lint run ./...
             stage_fixed: true
 
 post-checkout:

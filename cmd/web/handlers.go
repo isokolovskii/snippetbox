@@ -7,8 +7,12 @@ import (
 	"text/template"
 )
 
-func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Server", "Go")
+const (
+	minID = 1
+)
+
+func (app *application) home(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Add("Server", "Go")
 
 	files := []string{
 		"./ui/html/base.tmpl.html",
@@ -16,36 +20,49 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		"./ui/html/pages/home.tmpl.html",
 	}
 
-	ts, err := template.ParseFiles(files...)
-
+	tmpl, err := template.ParseFiles(files...)
 	if err != nil {
-		app.serverError(w, r, err)
+		app.serverError(writer, request, err)
+
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", nil)
+	err = tmpl.ExecuteTemplate(writer, "base", nil)
 	if err != nil {
-		app.serverError(w, r, err)
+		app.serverError(writer, request, err)
 	}
 }
 
-func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+func (app *application) snippetView(writer http.ResponseWriter, request *http.Request) {
+	id, err := strconv.Atoi(request.PathValue("id"))
 
-	if err != nil || id < 1 {
-		http.NotFound(w, r)
+	if err != nil || id < minID {
+		http.NotFound(writer, request)
+
 		return
 	}
 
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	_, err = fmt.Fprintf(writer, "Display a specific snippet with ID %d...", id)
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
 }
 
-func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Create a snippet..."))
+func (app *application) snippetCreate(writer http.ResponseWriter, request *http.Request) {
+	_, err := writer.Write([]byte("Create a snippet..."))
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
 }
 
-func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusCreated)
+func (app *application) snippetCreatePost(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	writer.WriteHeader(http.StatusCreated)
 
-	w.Write([]byte("Save a new snippet..."))
+	_, err := writer.Write([]byte("Save a new snippet..."))
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
 }

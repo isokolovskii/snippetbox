@@ -10,3 +10,4 @@ lefthook.yml
 .env
 .env.example
 db
+.golangci.yml

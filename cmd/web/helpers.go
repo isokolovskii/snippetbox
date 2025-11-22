@@ -6,22 +6,38 @@ import (
 	"runtime/debug"
 )
 
-func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
+const (
+	slogKeyMethod = "method"
+	slogKeyURI    = "uri"
+)
+
+func (app *application) serverError(
+	writer http.ResponseWriter,
+	request *http.Request,
+	err error,
+) {
 	var (
-		method = r.Method
-		uri    = r.URL.RequestURI()
+		method = request.Method
+		uri    = request.URL.RequestURI()
 	)
 
-	app.logger.Error(err.Error(), "method", method, "uri", uri)
+	app.logger.ErrorContext(
+		request.Context(),
+		err.Error(),
+		slogKeyMethod,
+		method,
+		slogKeyURI,
+		uri,
+	)
 
 	if app.debug {
 		trace := string(debug.Stack())
-		fmt.Printf("%s", trace)
+		_, _ = fmt.Printf("%s", trace)
 	}
 
-	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-}
-
-func (app *application) clientError(w http.ResponseWriter, statusCode int) {
-	http.Error(w, http.StatusText(statusCode), statusCode)
+	http.Error(
+		writer,
+		http.StatusText(http.StatusInternalServerError),
+		http.StatusInternalServerError,
+	)
 }

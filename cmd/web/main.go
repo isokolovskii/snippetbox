@@ -1,26 +1,35 @@
+// Package main is the entry point of the web application.
 package main
 
 import (
+	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
-
-	"github.com/joho/godotenv"
+	"time"
 )
 
-type application struct {
-	logger *slog.Logger
-	debug  bool
-}
+type (
+	application struct {
+		logger *slog.Logger
+		debug  bool
+	}
+	neuteredFileSystem struct {
+		fs http.FileSystem
+	}
+)
+
+const (
+	exitCodeErr  = 1
+	readTimeout  = 5 * time.Second
+	writeTimeout = 10 * time.Second
+	slogKeyAddr  = "addr"
+)
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		slog.Warn("Error loading .env file, using defaults or existing environment variables")
-	}
-
 	addr := os.Getenv("ADDR")
 	if addr == "" {
 		addr = ":4000"
@@ -43,46 +52,70 @@ func main() {
 		level = slog.LevelDebug
 	}
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level, AddSource: debug}))
+	handlerOpts := &slog.HandlerOptions{
+		Level:       level,
+		AddSource:   debug,
+		ReplaceAttr: nil,
+	}
+	logger := slog.New(slog.NewTextHandler(os.Stdout, handlerOpts))
 
 	app := &application{
 		logger: logger,
 		debug:  debug,
 	}
 
-	logger.Info("starting server", "addr", addr)
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      app.routes(staticDir),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	}
 
-	err = http.ListenAndServe(addr, app.routes(staticDir))
-	logger.Error(err.Error())
-	os.Exit(1)
+	logger.InfoContext(context.Background(), "starting server", slogKeyAddr, addr)
+
+	err = srv.ListenAndServe()
+	logger.ErrorContext(context.Background(), err.Error())
+	os.Exit(exitCodeErr)
 }
 
-type neuteredFileSystem struct {
-	fs http.FileSystem
-}
-
+// Open opens the named file.
 func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
-	f, err := nfs.fs.Open(path)
-
+	file, err := nfs.fs.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
 
-	s, err := f.Stat()
+	stat, err := file.Stat()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get file info: %w", err)
 	}
 
-	if s.IsDir() {
-		index := filepath.Join(path, "index.html")
-		if _, err := nfs.fs.Open(index); err != nil {
-			closeErr := f.Close()
-			if closeErr != nil {
-				return nil, closeErr
-			}
-			return nil, err
+	if !stat.IsDir() {
+		return file, nil
+	}
+
+	file, err = nfs.openDirectory(path, file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open directory: %w", err)
+	}
+
+	return file, nil
+}
+
+func (nfs neuteredFileSystem) openDirectory(path string, file http.File) (http.File, error) {
+	index := filepath.Join(path, "index.html")
+
+	_, err := nfs.fs.Open(index)
+	if err != nil {
+		closeErr := file.Close()
+		if closeErr != nil {
+			return nil, fmt.Errorf("failed to close file: %w", closeErr)
 		}
+
+		return nil, fmt.Errorf("failed to open index.html: %w", err)
 	}
 
-	return f, nil
+	return file, nil
 }

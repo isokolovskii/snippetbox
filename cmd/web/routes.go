@@ -1,6 +1,8 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func (app *application) routes(staticDir string) *http.ServeMux {
 	mux := http.NewServeMux()
