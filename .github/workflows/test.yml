@@ -19,10 +19,37 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Test
-        run: go test $(go list ./... | grep -v '/gen$') -coverprofile coverage.out
+        run: go tool gotestsum --junitfile junit.xml -- -coverprofile coverage.txt ./...
       - name: Report coverage
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          flags: unit
           name: ${{ join(matrix.*, ' ') }}
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build binaries
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --snapshot --skip=publish --skip=snapcraft --skip=validate --clean --verbose
+      - name: Tar binaries to preserve executable bit
+        run: 'tar -cvf commitizen-binaries.tar --directory dist/ $(find dist/ -executable -type f -printf "%P\0" | xargs --null)'
+      - name: Upload binaries as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Executables
+          path: commitizen-binaries.tar
