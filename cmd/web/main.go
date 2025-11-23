@@ -21,7 +21,6 @@ import (
 type (
 	application struct {
 		logger       *slog.Logger
-		db           *sql.DB
 		repositories *repositories.Repositories
 		debug        bool
 	}
@@ -37,9 +36,11 @@ type (
 )
 
 const (
-	readTimeout  = 5 * time.Second
-	writeTimeout = 10 * time.Second
-	slogKeyAddr  = "addr"
+	readTimeout         = 5 * time.Second
+	writeTimeout        = 10 * time.Second
+	databasePingTimeout = 20 * time.Second
+	slogKeyAddr         = "addr"
+	slogKeyValue        = "value"
 )
 
 func main() {
@@ -69,7 +70,6 @@ func main() {
 	app := &application{
 		logger:       logger,
 		debug:        loadedEnv.debug,
-		db:           db,
 		repositories: repositories.CreateRepositories(db),
 	}
 
@@ -130,9 +130,17 @@ func getEnv() *env {
 	}
 
 	debugStr := os.Getenv("DEBUG")
-	debug, err := strconv.ParseBool(debugStr)
-	if err != nil {
-		debug = false
+	debug := false
+	if debugStr != "" {
+		debug, err = strconv.ParseBool(debugStr)
+		if err != nil {
+			slog.Default().WarnContext(
+				context.Background(),
+				"invalid DEBIG env, faling back to false",
+				slogKeyValue, debugStr,
+			)
+			debug = false
+		}
 	}
 
 	dbDSN := os.Getenv("DB_DSN")
@@ -171,7 +179,10 @@ func openDb(dsn string) (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
 
-	err = db.PingContext(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), databasePingTimeout)
+	defer cancel()
+
+	err = db.PingContext(ctx)
 	if err != nil {
 		closeErr := db.Close()
 

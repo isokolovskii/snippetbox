@@ -8,3 +8,4 @@ reviews:
   pre_merge_checks:
     title:
       mode: error
+      requirements: 'Title should be concise and descriptive, ideally under 72 characters. Use imperative mood (e.g., "Add database for snippets").'
