@@ -8,10 +8,14 @@ tool (
 	gotest.tools/gotestsum
 )
 
-require github.com/joho/godotenv v1.5.1
+require (
+	github.com/go-sql-driver/mysql v1.9.3
+	github.com/joho/godotenv v1.5.1
+)
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/air-verse/air v1.63.1 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
