@@ -136,7 +136,7 @@ func getEnv() *env {
 		if err != nil {
 			slog.Default().WarnContext(
 				context.Background(),
-				"invalid DEBIG env, faling back to false",
+				"invalid DEBIG env, falling back to false",
 				slogKeyValue, debugStr,
 			)
 			debug = false
