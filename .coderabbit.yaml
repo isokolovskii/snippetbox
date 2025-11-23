@@ -1,0 +1,10 @@
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  collapse_walkthrough: true
+  auto_assign_reviewers: true
+  in_progress_fortune: false
+  poem: false
+  pre_merge_checks:
+    title:
+      mode: error
