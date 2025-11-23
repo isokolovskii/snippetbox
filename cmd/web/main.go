@@ -86,7 +86,7 @@ func main() {
 
 	err = srv.ListenAndServe()
 	logger.ErrorContext(context.Background(), err.Error())
-	panic("")
+	panic("unexpected server failure")
 }
 
 func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
@@ -176,7 +176,7 @@ func openDb(dsn string) (*sql.DB, error) {
 		closeErr := db.Close()
 
 		if closeErr != nil {
-			return nil, fmt.Errorf("failed to close database connection: %w", err)
+			return nil, fmt.Errorf("failed to close database connection: %w", closeErr)
 		}
 
 		return nil, fmt.Errorf("failed to verify connection to database: %w", err)
