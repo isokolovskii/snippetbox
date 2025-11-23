@@ -14,13 +14,16 @@ import (
 	"github.com/joho/godotenv"
 
 	_ "github.com/go-sql-driver/mysql"
+
+	"snippetbox.isokol.dev/internal/repositories"
 )
 
 type (
 	application struct {
-		logger *slog.Logger
-		db     *sql.DB
-		debug  bool
+		logger       *slog.Logger
+		db           *sql.DB
+		repositories *repositories.Repositories
+		debug        bool
 	}
 	neuteredFileSystem struct {
 		fs http.FileSystem
@@ -64,9 +67,10 @@ func main() {
 	defer db.Close()
 
 	app := &application{
-		logger: logger,
-		debug:  loadedEnv.debug,
-		db:     db,
+		logger:       logger,
+		debug:        loadedEnv.debug,
+		db:           db,
+		repositories: repositories.CreateRepositories(db),
 	}
 
 	srv := &http.Server{
@@ -169,9 +173,13 @@ func openDb(dsn string) (*sql.DB, error) {
 
 	err = db.PingContext(context.Background())
 	if err != nil {
-		defer db.Close()
+		closeErr := db.Close()
 
-		return nil, fmt.Errorf("falied to verify connection to database: %w", err)
+		if closeErr != nil {
+			return nil, fmt.Errorf("failed to close database connection: %w", err)
+		}
+
+		return nil, fmt.Errorf("failed to verify connection to database: %w", err)
 	}
 
 	return db, nil

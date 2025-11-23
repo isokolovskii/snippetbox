@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "4000:4000"
+    init: true
     develop:
       watch:
         - action: sync
@@ -33,10 +34,21 @@ services:
     image: mysql:8.0
     ports:
       - "3306:3306"
+    init: true
     environment:
       - MYSQL_ROOT_PASSWORD=root
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p$$MYSQL_ROOT_PASSWORD",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
