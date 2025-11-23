@@ -39,6 +39,5 @@ INSERT INTO snippets (title, content, created, expires) VALUES (
 );
 
 -- Create user --
-CREATE USER 'web'@'localhost';
-GRANT SELECT, INSERT, UPDATE, DELETE ON snippetbox.* TO 'web'@'localhost';
-ALTER USER 'web'@'localhost' IDENTIFIED BY 'pass';
+CREATE USER 'web'@'%' IDENTIFIED WITH mysql_native_password BY 'pass';
+GRANT SELECT, INSERT, UPDATE, DELETE ON snippetbox.* TO 'web'@'%';
