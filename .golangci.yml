@@ -12,7 +12,6 @@ linters:
     - copyloopvar
     - cyclop
     - decorder
-    - depguard
     - dogsled
     - dupword
     - durationcheck
@@ -23,14 +22,12 @@ linters:
     - errname
     - errorlint
     - exhaustive
-    - exhaustruct
     - exptostd
     - fatcontext
     - forcetypeassert
     - funcorder
     - funlen
     - gocheckcompilerdirectives
-    - gochecknoglobals
     - gochecknoinits
     - gochecksumtype
     - gocognit
@@ -90,7 +87,6 @@ linters:
     - tagliatelle
     - testableexamples
     - testifylint
-    - testpackage
     - thelper
     - tparallel
     - unconvert
@@ -171,12 +167,6 @@ linters:
       explicit-exhaustive-switch: false
       explicit-exhaustive-map: false
       default-case-required: false
-    exhaustruct:
-      allow-empty: false
-      allow-empty-returns: false
-      allow-empty-declarations: false
-      exclude:
-        - ".+/http.Server$"
     fatcontext:
       check-struct-pointers: false
     funcorder:
@@ -313,15 +303,13 @@ linters:
         enable:
           - pkg-doc
           - single-pkg-doc
-          - require-pkg-doc
           - start-with-name
-          - require-doc
           - deprecated
           - max-len
           - no-unused-link
         options:
           max-len:
-            length: 77
+            length: 120
           require-doc:
             ignore-exported: false
             ignore-unexported: true
@@ -420,8 +408,8 @@ linters:
       import-require-grouping: true
       type-require-single-type: true
       type-require-grouping: true
-      var-require-single-var: true
-      var-require-grouping: true
+      var-require-single-var: false
+      var-require-grouping: false
     iface:
       enable:
         - identical
@@ -539,11 +527,24 @@ linters:
           severity: error
       confidence: 0.8
       rules:
+        - name: add-constant
+          severity: warning
+          disabled: false
+          exclude: [""]
+          arguments:
+            - max-lit-count: "3"
+              allow-strs: '""'
+              allow-ints: "0,1,2"
+              allow-floats: "0.0,0.,1.0,1.,2.0,2."
         - name: line-length-limit
           severity: warning
           disabled: false
           exclude: [""]
           arguments: [120]
+        - name: flag-parameter
+          severity: warning
+          disabled: false
+          exclude: [""]
     rowserrcheck:
       packages: []
     sloglint:
@@ -635,10 +636,6 @@ linters:
         fn-pattern: ""
       suite-extra-assert-call:
         mode: remove
-    testpackage:
-      skip-regexp: (export|internal)_test\.go
-      allow-packages:
-        - main
     thelper:
       test:
         first: true
@@ -667,7 +664,7 @@ linters:
       field-writes-are-uses: true
       post-statements-are-reads: true
       exported-fields-are-used: true
-      parameters-are-used: false
+      parameters-are-used: true
       local-variables-are-used: false
       generated-is-used: false
     usestdlibvars:
@@ -721,6 +718,8 @@ linters:
           - errcheck
           - dupl
           - lll
+          - revive
+          - varnamelen
 formatters:
   enable:
     - gci

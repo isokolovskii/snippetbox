@@ -7,6 +7,8 @@ tool (
 	github.com/evilmartians/lefthook
 )
 
+require github.com/joho/godotenv v1.5.1
+
 require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect

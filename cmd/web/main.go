@@ -1,4 +1,3 @@
-// Package main is the entry point of the web application.
 package main
 
 import (
@@ -10,6 +9,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type (
@@ -30,6 +31,12 @@ const (
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		// Do nothing - try to read from env or set defaults.
+		slog.Default().InfoContext(context.Background(), "no .env file, will try to get from system env or defaults")
+	}
+
 	addr := os.Getenv("ADDR")
 	if addr == "" {
 		addr = ":4000"
@@ -80,7 +87,6 @@ func main() {
 	os.Exit(exitCodeErr)
 }
 
-// Open opens the named file.
 func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
 	file, err := nfs.fs.Open(path)
 	if err != nil {
