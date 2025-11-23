@@ -1,14 +1,18 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"text/template"
+
+	"snippetbox.isokol.dev/internal/models"
 )
 
 const (
-	minID = 1
+	minID             = 1
+	defaultExpiration = 7
 )
 
 func (app *application) home(writer http.ResponseWriter, request *http.Request) {
@@ -42,7 +46,18 @@ func (app *application) snippetView(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	_, err = fmt.Fprintf(writer, "Display a specific snippet with ID %d...", id)
+	snippet, err := app.repositories.Snippet.Get(request.Context(), id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			http.NotFound(writer, request)
+		} else {
+			app.serverError(writer, request, err)
+		}
+
+		return
+	}
+
+	_, err = fmt.Fprintf(writer, "%+v", snippet)
 	if err != nil {
 		app.serverError(writer, request, err)
 	}
@@ -59,10 +74,16 @@ func (app *application) snippetCreatePost(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	writer.WriteHeader(http.StatusCreated)
+	title := "Dummy snippet"
+	content := "Dummy snippet content\nSome other content\nWill be removed later"
+	expires := defaultExpiration
 
-	_, err := writer.Write([]byte("Save a new snippet..."))
+	id, err := app.repositories.Snippet.Insert(request.Context(), title, content, expires)
 	if err != nil {
 		app.serverError(writer, request, err)
+
+		return
 	}
+
+	http.Redirect(writer, request, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
