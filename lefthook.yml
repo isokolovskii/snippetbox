@@ -37,9 +37,15 @@ pre-commit:
               - go.sum
             stage_fixed: true
           - name: lint & format
-            run: golangci-lint run ./...
             glob: "*.go"
-            stage_fixed: true
+            group:
+              parallel: false
+              jobs:
+                - name: format
+                  run: golangci-lint fmt ./...
+                  stage_fixed: true
+                - name: lint
+                  run: golangci-lint run ./...
 
 post-checkout:
   parallel: false
