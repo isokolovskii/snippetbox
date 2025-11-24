@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"text/template"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -20,9 +21,10 @@ import (
 
 type (
 	application struct {
-		logger       *slog.Logger
-		repositories *repositories.Repositories
-		debug        bool
+		logger        *slog.Logger
+		repositories  *repositories.Repositories
+		templateCache map[string]*template.Template
+		debug         bool
 	}
 	neuteredFileSystem struct {
 		fs http.FileSystem
@@ -67,10 +69,17 @@ func main() {
 
 	defer db.Close()
 
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.ErrorContext(context.Background(), err.Error())
+		panic("Unable to create template cache")
+	}
+
 	app := &application{
-		logger:       logger,
-		debug:        loadedEnv.debug,
-		repositories: repositories.CreateRepositories(db),
+		logger:        logger,
+		debug:         loadedEnv.debug,
+		repositories:  repositories.CreateRepositories(db),
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{
