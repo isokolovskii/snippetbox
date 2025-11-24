@@ -9,8 +9,14 @@ services:
     develop:
       watch:
         - action: sync
-          path: .
-          target: /app
+          path: ./cmd
+          target: /app/cmd
+        - action: sync
+          path: ./internal
+          target: /app/internal
+        - action: sync
+          path: ./ui
+          target: /app/ui
         - action: rebuild
           path: go.mod
         - action: rebuild
