@@ -19,6 +19,13 @@ const (
 func (app *application) home(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Add("Server", "Go")
 
+	snippets, err := app.repositories.Snippet.Latest(request.Context())
+	if err != nil {
+		app.serverError(writer, request, err)
+
+		return
+	}
+
 	files := []string{
 		"./ui/html/base.tmpl.html",
 		"./ui/html/partials/nav.tmpl.html",
@@ -32,7 +39,11 @@ func (app *application) home(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	err = tmpl.ExecuteTemplate(writer, baseTemplateName, nil)
+	data := templateData{
+		Snippets: snippets,
+	}
+
+	err = tmpl.ExecuteTemplate(writer, baseTemplateName, data)
 	if err != nil {
 		app.serverError(writer, request, err)
 	}
@@ -67,6 +78,8 @@ func (app *application) snippetView(writer http.ResponseWriter, request *http.Re
 	tmpl, err := template.ParseFiles(files...)
 	if err != nil {
 		app.serverError(writer, request, err)
+
+		return
 	}
 
 	data := templateData{
