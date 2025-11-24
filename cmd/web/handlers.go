@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"text/template"
 
 	"snippetbox.isokol.dev/internal/models"
 )
@@ -13,7 +12,6 @@ import (
 const (
 	minID             = 1
 	defaultExpiration = 7
-	baseTemplateName  = "base"
 )
 
 func (app *application) home(writer http.ResponseWriter, request *http.Request) {
@@ -26,27 +24,9 @@ func (app *application) home(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	files := []string{
-		"./ui/html/base.tmpl.html",
-		"./ui/html/partials/nav.tmpl.html",
-		"./ui/html/pages/home.tmpl.html",
-	}
-
-	tmpl, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(writer, request, err)
-
-		return
-	}
-
-	data := templateData{
+	app.renderTemplate(writer, request, http.StatusOK, "home.tmpl.html", &templateData{
 		Snippets: snippets,
-	}
-
-	err = tmpl.ExecuteTemplate(writer, baseTemplateName, data)
-	if err != nil {
-		app.serverError(writer, request, err)
-	}
+	})
 }
 
 func (app *application) snippetView(writer http.ResponseWriter, request *http.Request) {
@@ -69,27 +49,9 @@ func (app *application) snippetView(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	files := []string{
-		"./ui/html/base.tmpl.html",
-		"./ui/html/partials/nav.tmpl.html",
-		"./ui/html/pages/view.tmpl.html",
-	}
-
-	tmpl, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(writer, request, err)
-
-		return
-	}
-
-	data := templateData{
+	app.renderTemplate(writer, request, http.StatusOK, "view.tmpl.html", &templateData{
 		Snippet: snippet,
-	}
-
-	err = tmpl.ExecuteTemplate(writer, baseTemplateName, data)
-	if err != nil {
-		app.serverError(writer, request, err)
-	}
+	})
 }
 
 func (app *application) snippetCreate(writer http.ResponseWriter, request *http.Request) {

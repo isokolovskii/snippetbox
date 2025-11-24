@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
@@ -10,6 +11,8 @@ const (
 	slogKeyMethod = "method"
 	slogKeyURI    = "uri"
 )
+
+var ErrTemplateNotFound = errors.New("template not found")
 
 func (app *application) serverError(
 	writer http.ResponseWriter,
@@ -40,4 +43,27 @@ func (app *application) serverError(
 		http.StatusText(http.StatusInternalServerError),
 		http.StatusInternalServerError,
 	)
+}
+
+func (app *application) renderTemplate(
+	writer http.ResponseWriter,
+	request *http.Request,
+	status int,
+	page string,
+	data *templateData,
+) {
+	tmpl, ok := app.templateCache[page]
+	if !ok {
+		err := fmt.Errorf("%w: the template %s does not exist", ErrTemplateNotFound, page)
+		app.serverError(writer, request, err)
+
+		return
+	}
+
+	writer.WriteHeader(status)
+
+	err := tmpl.ExecuteTemplate(writer, "base", data)
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
 }
