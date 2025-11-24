@@ -51,7 +51,7 @@ func (app *application) snippetView(writer http.ResponseWriter, request *http.Re
 	}
 
 	data := app.newTemplateData(request)
-	data.Snippet = snippet
+	data.Snippet = &snippet
 
 	app.renderTemplate(writer, request, http.StatusOK, "view.tmpl.html", data)
 }
