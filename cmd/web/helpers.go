@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
 
 const (
@@ -75,5 +76,11 @@ func (app *application) renderTemplate(
 	_, err = buf.WriteTo(writer)
 	if err != nil {
 		app.serverError(writer, request, err)
+	}
+}
+
+func (*application) newTemplateData(_ *http.Request) *templateData {
+	return &templateData{
+		CurrentYear: time.Now().Year(),
 	}
 }
