@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"text/template"
+	"time"
 
 	"snippetbox.isokol.dev/internal/models"
 )
@@ -39,7 +40,10 @@ func newTemplateCache() (map[string]*template.Template, error) {
 }
 
 func parsePageTemplate(name, page string) (*template.Template, error) {
-	tmpl, err := template.ParseFiles("./ui/html/base.tmpl.html")
+	functions := template.FuncMap{
+		"humanDate": humanDate,
+	}
+	tmpl, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl.html")
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse base template: %w", err)
 	}
@@ -55,4 +59,8 @@ func parsePageTemplate(name, page string) (*template.Template, error) {
 	}
 
 	return tmpl, nil
+}
+
+func humanDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04")
 }
