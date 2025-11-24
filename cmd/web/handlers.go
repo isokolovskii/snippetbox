@@ -13,6 +13,7 @@ import (
 const (
 	minID             = 1
 	defaultExpiration = 7
+	baseTemplateName  = "base"
 )
 
 func (app *application) home(writer http.ResponseWriter, request *http.Request) {
@@ -31,7 +32,7 @@ func (app *application) home(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	err = tmpl.ExecuteTemplate(writer, "base", nil)
+	err = tmpl.ExecuteTemplate(writer, baseTemplateName, nil)
 	if err != nil {
 		app.serverError(writer, request, err)
 	}
@@ -57,7 +58,22 @@ func (app *application) snippetView(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	_, err = fmt.Fprintf(writer, "%+v", snippet)
+	files := []string{
+		"./ui/html/base.tmpl.html",
+		"./ui/html/partials/nav.tmpl.html",
+		"./ui/html/pages/view.tmpl.html",
+	}
+
+	tmpl, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
+
+	data := templateData{
+		Snippet: snippet,
+	}
+
+	err = tmpl.ExecuteTemplate(writer, baseTemplateName, data)
 	if err != nil {
 		app.serverError(writer, request, err)
 	}
