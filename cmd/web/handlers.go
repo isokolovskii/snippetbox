@@ -15,8 +15,6 @@ const (
 )
 
 func (app *application) home(writer http.ResponseWriter, request *http.Request) {
-	writer.Header().Add("Server", "Go")
-
 	snippets, err := app.repositories.Snippet.Latest(request.Context())
 	if err != nil {
 		app.serverError(writer, request, err)
