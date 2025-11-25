@@ -19,3 +19,29 @@ func commonHeaders(next http.Handler) http.Handler {
 		next.ServeHTTP(writer, request)
 	})
 }
+
+func (app *application) logRequest(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		var (
+			ip     = request.RemoteAddr
+			proto  = request.Proto
+			method = request.Method
+			uri    = request.URL.RequestURI()
+		)
+
+		app.logger.InfoContext(
+			request.Context(),
+			"received request",
+			slogKeyIP,
+			ip,
+			slogKeyProto,
+			proto,
+			slogKeyMethod,
+			method,
+			slogKeyURI,
+			uri,
+		)
+
+		next.ServeHTTP(writer, request)
+	})
+}

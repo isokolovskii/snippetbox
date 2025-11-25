@@ -41,8 +41,6 @@ const (
 	readTimeout         = 5 * time.Second
 	writeTimeout        = 10 * time.Second
 	databasePingTimeout = 20 * time.Second
-	slogKeyAddr         = "addr"
-	slogKeyValue        = "value"
 )
 
 func main() {
