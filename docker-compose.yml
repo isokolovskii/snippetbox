@@ -8,15 +8,8 @@ services:
     init: true
     develop:
       watch:
-        - action: sync
-          path: ./cmd
-          target: /app/cmd
-        - action: sync
-          path: ./internal
-          target: /app/internal
-        - action: sync
-          path: ./ui
-          target: /app/ui
+        - action: restart
+          path: .air.toml
         - action: rebuild
           path: go.mod
         - action: rebuild
@@ -25,6 +18,11 @@ services:
           path: Dockerfile.dev
         - action: rebuild
           path: .dockerignore
+    volumes:
+      - ./.air.toml:/app/.air.toml
+      - ./cmd:/app/cmd
+      - ./internal:/app/internal
+      - ./ui:/app/ui
     environment:
       - ADDR=:4000
       - STATIC_DIR=./ui/static/

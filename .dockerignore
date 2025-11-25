@@ -11,3 +11,5 @@ lefthook.yml
 .env.example
 db
 .golangci.yml
+.codecov.yml
+.coderabbit.yaml
