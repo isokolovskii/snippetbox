@@ -1,8 +1,12 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 )
+
+var ErrServerUnexpected = errors.New("unexpected server error")
 
 func commonHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
@@ -41,6 +45,21 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 			slogKeyURI,
 			uri,
 		)
+
+		next.ServeHTTP(writer, request)
+	})
+}
+
+func (app *application) recoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		defer func() {
+			pv := recover()
+
+			if pv != nil {
+				writer.Header().Set("Connection", "close")
+				app.serverError(writer, request, fmt.Errorf("%w: %v", ErrServerUnexpected, pv))
+			}
+		}()
 
 		next.ServeHTTP(writer, request)
 	})
