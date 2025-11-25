@@ -9,11 +9,6 @@ import (
 	"time"
 )
 
-const (
-	slogKeyMethod = "method"
-	slogKeyURI    = "uri"
-)
-
 var ErrTemplateNotFound = errors.New("template not found")
 
 func (app *application) serverError(
