@@ -23,6 +23,7 @@ services:
       - ./cmd:/app/cmd
       - ./internal:/app/internal
       - ./ui:/app/ui
+      - ./migrations:/app/migrations
     environment:
       - ADDR=:4000
       - STATIC_DIR=./ui/static/
