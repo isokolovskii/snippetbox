@@ -19,6 +19,7 @@ WORKDIR /app
 
 COPY --from=build /app/web /app/web
 COPY ui/ /app/ui
+COPY migrations/ /app/migrations
 
 EXPOSE 4000
 
