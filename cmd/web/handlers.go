@@ -12,11 +12,11 @@ import (
 
 type (
 	snippetCreateForm struct {
-		validator.Validator
+		validator.Validator `form:"-"`
 
-		Title   string
-		Content string
-		Expires int
+		Title   string `form:"title"`
+		Content string `form:"content"`
+		Expires int    `form:"expires"`
 	}
 )
 
@@ -88,24 +88,13 @@ func (app *application) snippetCreatePost(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	err := request.ParseForm()
+	var form snippetCreateForm
+
+	err := app.decodePostForm(request, &form)
 	if err != nil {
 		app.clientError(writer, http.StatusBadRequest)
 
 		return
-	}
-
-	expires, err := strconv.Atoi(request.PostForm.Get(fieldExpires))
-	if err != nil {
-		app.clientError(writer, http.StatusBadRequest)
-
-		return
-	}
-
-	form := snippetCreateForm{
-		Title:   request.PostForm.Get(fieldTitle),
-		Content: request.PostForm.Get(fieldContent),
-		Expires: expires,
 	}
 
 	form.validate()

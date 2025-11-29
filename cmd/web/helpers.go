@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/go-playground/form/v4"
 )
 
 var ErrTemplateNotFound = errors.New("template not found")
@@ -82,4 +84,23 @@ func (*application) newTemplateData(_ *http.Request) *templateData {
 	return &templateData{
 		CurrentYear: time.Now().Year(),
 	}
+}
+
+func (app *application) decodePostForm(request *http.Request, destination any) error {
+	err := request.ParseForm()
+	if err != nil {
+		return fmt.Errorf("error parsing form: %w", err)
+	}
+
+	err = app.formDecoder.Decode(destination, request.PostForm)
+	if err != nil {
+		var invalidDecoderError *form.InvalidDecoderError
+		if errors.As(err, &invalidDecoderError) {
+			panic(err)
+		}
+
+		return fmt.Errorf("unable to decode form: %w", err)
+	}
+
+	return nil
 }

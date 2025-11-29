@@ -12,6 +12,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/go-playground/form/v4"
 	"github.com/joho/godotenv"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -23,6 +24,7 @@ type (
 	application struct {
 		logger        *slog.Logger
 		repositories  *repositories.Repositories
+		formDecoder   *form.Decoder
 		templateCache map[string]*template.Template
 		debug         bool
 	}
@@ -73,11 +75,14 @@ func main() {
 		panic("Unable to create template cache")
 	}
 
+	formDecoder := form.NewDecoder()
+
 	app := &application{
 		logger:        logger,
 		debug:         loadedEnv.debug,
 		repositories:  repositories.CreateRepositories(db),
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	srv := &http.Server{
