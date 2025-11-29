@@ -42,6 +42,10 @@ func (app *application) serverError(
 	)
 }
 
+func (*application) clientError(writer http.ResponseWriter, status int) {
+	http.Error(writer, http.StatusText(status), status)
+}
+
 func (app *application) renderTemplate(
 	writer http.ResponseWriter,
 	request *http.Request,

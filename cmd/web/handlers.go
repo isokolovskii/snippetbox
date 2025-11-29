@@ -63,9 +63,22 @@ func (app *application) snippetCreatePost(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	title := "Dummy snippet"
-	content := "Dummy snippet content\nSome other content\nWill be removed later"
-	expires := defaultExpiration
+	err := request.ParseForm()
+	if err != nil {
+		app.clientError(writer, http.StatusBadRequest)
+
+		return
+	}
+
+	title := request.PostForm.Get("title")
+	content := request.PostForm.Get("content")
+
+	expires, err := strconv.Atoi(request.PostForm.Get("expires"))
+	if err != nil {
+		app.clientError(writer, http.StatusBadRequest)
+
+		return
+	}
 
 	id, err := app.repositories.Snippet.Insert(request.Context(), title, content, expires)
 	if err != nil {
