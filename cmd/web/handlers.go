@@ -7,14 +7,16 @@ import (
 	"strconv"
 
 	"snippetbox.isokol.dev/internal/models"
+	"snippetbox.isokol.dev/internal/validator"
 )
 
 type (
 	snippetCreateForm struct {
-		FieldErrors map[string]string
-		Title       string
-		Content     string
-		Expires     int
+		validator.Validator
+
+		Title   string
+		Content string
+		Expires int
 	}
 )
 
@@ -28,6 +30,9 @@ const (
 	homeTemplateName     = "home.tmpl.html"
 	viewTemplateName     = "view.tmpl.html"
 	createTemplateName   = "create.tmpl.html"
+	fieldTitle           = "title"
+	fieldContent         = "content"
+	fieldExpires         = "expires"
 )
 
 func (app *application) home(writer http.ResponseWriter, request *http.Request) {
@@ -90,7 +95,7 @@ func (app *application) snippetCreatePost(
 		return
 	}
 
-	expires, err := strconv.Atoi(request.PostForm.Get("expires"))
+	expires, err := strconv.Atoi(request.PostForm.Get(fieldExpires))
 	if err != nil {
 		app.clientError(writer, http.StatusBadRequest)
 
@@ -98,15 +103,14 @@ func (app *application) snippetCreatePost(
 	}
 
 	form := snippetCreateForm{
-		Title:       request.PostForm.Get("title"),
-		Content:     request.PostForm.Get("content"),
-		Expires:     expires,
-		FieldErrors: map[string]string{},
+		Title:   request.PostForm.Get(fieldTitle),
+		Content: request.PostForm.Get(fieldContent),
+		Expires: expires,
 	}
 
-	validateSnippetCreateForm(&form)
+	form.validate()
 
-	if len(form.FieldErrors) > 0 {
+	if !form.Valid() {
 		data := app.newTemplateData(request)
 		data.Form = form
 		app.renderTemplate(writer, request, http.StatusUnprocessableEntity, createTemplateName, data)
@@ -122,4 +126,38 @@ func (app *application) snippetCreatePost(
 	}
 
 	http.Redirect(writer, request, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
+}
+
+func (form *snippetCreateForm) validate() {
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateNotBlankValidator(),
+		form.Title,
+		fieldTitle,
+		ValidationErrorBlank,
+	)
+
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateMaxCharsValidator(TitleLengthLimit),
+		form.Title,
+		fieldTitle,
+		fmt.Sprintf("This field cannot be more than %d characters long", TitleLengthLimit),
+	)
+
+	validator.CheckField(
+		&form.Validator, validator.CreateNotBlankValidator(), form.Content, fieldContent, ValidationErrorBlank)
+
+	validator.CheckField(
+		&form.Validator,
+		validator.CreatePermittedValueValidator(ExpiresInDay, ExpiresInWeek, ExpiresInYear),
+		form.Expires,
+		fieldExpires,
+		fmt.Sprintf(
+			"This field must be either %d, %d or %d",
+			ExpiresInDay,
+			ExpiresInWeek,
+			ExpiresInYear,
+		),
+	)
 }
