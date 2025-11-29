@@ -55,10 +55,8 @@ func (app *application) snippetView(writer http.ResponseWriter, request *http.Re
 }
 
 func (app *application) snippetCreate(writer http.ResponseWriter, request *http.Request) {
-	_, err := writer.Write([]byte("Create a snippet..."))
-	if err != nil {
-		app.serverError(writer, request, err)
-	}
+	data := app.newTemplateData(request)
+	app.renderTemplate(writer, request, http.StatusOK, "create.tmpl.html", data)
 }
 
 func (app *application) snippetCreatePost(
