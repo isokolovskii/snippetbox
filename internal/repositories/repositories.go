@@ -9,6 +9,8 @@ type (
 	Repositories struct {
 		// Snippets repository.
 		Snippet *SnippetRepository
+		// Users repository.
+		User *UserRepository
 	}
 )
 
@@ -16,6 +18,9 @@ type (
 func CreateRepositories(db *sql.DB) *Repositories {
 	return &Repositories{
 		Snippet: &SnippetRepository{
+			db: db,
+		},
+		User: &UserRepository{
 			db: db,
 		},
 	}
