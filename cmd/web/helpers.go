@@ -15,8 +15,10 @@ const (
 	sessionFlashField = "flash"
 )
 
+// ErrTemplateNotFound - error returned if required template not found.
 var ErrTemplateNotFound = errors.New("template not found")
 
+// Helper for returning server error to user.
 func (app *application) serverError(
 	writer http.ResponseWriter,
 	request *http.Request,
@@ -48,10 +50,12 @@ func (app *application) serverError(
 	)
 }
 
+// Helper for returning client error to user.
 func (*application) clientError(writer http.ResponseWriter, status int) {
 	http.Error(writer, http.StatusText(status), status)
 }
 
+// Helper function for rendering templates.
 func (app *application) renderTemplate(
 	writer http.ResponseWriter,
 	request *http.Request,
@@ -84,6 +88,7 @@ func (app *application) renderTemplate(
 	}
 }
 
+// Helper function for creating template data.
 func (app *application) newTemplateData(request *http.Request) *templateData {
 	flash := app.sessionManager.PopString(request.Context(), sessionFlashField)
 
@@ -93,6 +98,7 @@ func (app *application) newTemplateData(request *http.Request) *templateData {
 	}
 }
 
+// Helper function for decoding forms in post requests.
 func (app *application) decodePostForm(request *http.Request, destination any) error {
 	err := request.ParseForm()
 	if err != nil {

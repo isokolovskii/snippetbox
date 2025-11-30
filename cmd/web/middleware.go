@@ -6,8 +6,10 @@ import (
 	"net/http"
 )
 
+// ErrServerUnexpected - error for unexpected things happening.
 var ErrServerUnexpected = errors.New("unexpected server error")
 
+// Server common headers middleware.
 func commonHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Security-Policy",
@@ -24,6 +26,7 @@ func commonHeaders(next http.Handler) http.Handler {
 	})
 }
 
+// Log server requests middleware.
 func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		var (
@@ -50,6 +53,7 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 	})
 }
 
+// Middleware to recover from panics in handlers.
 func (app *application) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		defer func() {

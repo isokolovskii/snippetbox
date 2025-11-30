@@ -11,18 +11,31 @@ import (
 )
 
 type (
+	// Environment based config.
 	env struct {
-		addr          string
-		staticDir     string
-		dbDsn         string
-		dbName        string
+		// Server address.
+		addr string
+		// Static files directory.
+		staticDir string
+		// Database connection.
+		dbDsn string
+		// Database name. Required value in .env or environment.
+		dbName string
+		// Database migrations directory.
 		migrationsDir string
-		tlsKeyPayh    string
-		tlsCertPath   string
-		debug         bool
+		// TLS key path. Required value in .env or environment.
+		tlsKeyPath string
+		// TLS certificate path. Required value in .env or environment.
+		tlsCertPath string
+		// Run server in debug mode.
+		debug bool
 	}
 )
 
+// Reads env variabled from .env or from system environment
+// DB_DSN, TLS_KEY_PATH and TLS_CERT_PATH are required variables
+// If required variables not provided via environment this function
+// will panic.
 func getEnv() *env {
 	err := godotenv.Load()
 	if err != nil {
@@ -48,11 +61,18 @@ func getEnv() *env {
 		dbDsn:         readEnvOrDefault("DB_DSN", ""),
 		migrationsDir: readEnvOrDefault("MIGRATIONS_DIR", "migrations"),
 		dbName:        readEnvOrDefault("DB_NAME", "snippetbox"),
-		tlsKeyPayh:    readEnvOrDefault("TLS_KEY_PATH", ""),
+		tlsKeyPath:    readEnvOrDefault("TLS_KEY_PATH", ""),
 		tlsCertPath:   readEnvOrDefault("TLS_CERT_PATH", ""),
 	}
 }
 
+// Reads variable from environment by provided key.
+// If variable not found in environment - will use
+// default variable. If empty string is provided as
+// default this function assumes that this variable
+// is required and no sensible default may exist.
+// If required variable is not provided this will be
+// logged and function will panic.
 func readEnvOrDefault(key, defaultValue string) string {
 	value := os.Getenv(key)
 

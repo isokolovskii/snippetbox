@@ -10,11 +10,14 @@ import (
 )
 
 type (
+	// SnippetRepository - snipepts repository.
 	SnippetRepository struct {
+		// Database connection.
 		db *sql.DB
 	}
 )
 
+// Insert - insert snippet into database.
 func (m *SnippetRepository) Insert(ctx context.Context, title, content string, expires int) (int, error) {
 	query := `INSERT INTO snippets (title, content, created, expires)
 	VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))`
@@ -32,6 +35,7 @@ func (m *SnippetRepository) Insert(ctx context.Context, title, content string, e
 	return int(id), nil
 }
 
+// Get snippet by ID from database.
 func (m *SnippetRepository) Get(ctx context.Context, id int) (models.Snippet, error) {
 	query := `SELECT id, title, content, created, expires FROM snippets
 	WHERE expires > UTC_TIMESTAMP() AND id = ?`
@@ -52,6 +56,7 @@ func (m *SnippetRepository) Get(ctx context.Context, id int) (models.Snippet, er
 	return snippet, nil
 }
 
+// Latest - get latest 10 snippets from database.
 func (m *SnippetRepository) Latest(ctx context.Context) ([]models.Snippet, error) {
 	query := `SELECT id, title, content, created, expires FROM snippets
 	WHERE expires > UTC_TIMESTAMP() ORDER BY id DESC LIMIT 10`
