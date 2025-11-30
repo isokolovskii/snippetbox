@@ -9,9 +9,12 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	"snippetbox.isokol.dev/migrations"
 )
 
 const (
@@ -26,7 +29,7 @@ func initDb(loadedEnv *env) (*sql.DB, error) {
 		return nil, fmt.Errorf("unable to open connection to database: %w", err)
 	}
 
-	err = runMigrations(db, loadedEnv.migrationsDir, loadedEnv.dbName, loadedEnv.migrationVersion)
+	err = runMigrations(db, loadedEnv.dbName)
 	if err != nil {
 		defer db.Close()
 
@@ -65,20 +68,25 @@ func openDb(dsn string) (*sql.DB, error) {
 }
 
 // Run database migrations.
-func runMigrations(db *sql.DB, migrationDir, databaseName string, migrationVersion uint) error {
-	driver, err := mysql.WithInstance(db, &mysql.Config{
+func runMigrations(db *sql.DB, databaseName string) error {
+	databseDriver, err := mysql.WithInstance(db, &mysql.Config{
 		DatabaseName: databaseName,
 	})
 	if err != nil {
 		return fmt.Errorf("error creating migration driver: %w", err)
 	}
 
-	instance, err := migrate.NewWithDatabaseInstance("file://"+migrationDir, databaseName, driver)
+	iofsDriver, err := iofs.New(migrations.Files, ".")
+	if err != nil {
+		return fmt.Errorf("failed to create iofs source driver: %w", err)
+	}
+
+	instance, err := migrate.NewWithInstance("iofs", iofsDriver, databaseName, databseDriver)
 	if err != nil {
 		return fmt.Errorf("error creating migration instance: %w", err)
 	}
 
-	err = instance.Migrate(migrationVersion)
+	err = instance.Up()
 	if err != nil {
 		if errors.Is(err, migrate.ErrNoChange) {
 			return nil
@@ -86,6 +94,8 @@ func runMigrations(db *sql.DB, migrationDir, databaseName string, migrationVersi
 
 		return fmt.Errorf("error running migrations: %w", err)
 	}
+
+	defer iofsDriver.Close()
 
 	return nil
 }

@@ -31,7 +31,6 @@ services:
       - DB_DSN=web:pass@tcp(mysql:3306)/snippetbox?parseTime=true&multiStatements=true
       - TLS_KEY_PATH=./tls/key.pem
       - TLS_CERT_PATH=./tls/cert.pem
-      - MIGRATION_VERSION=3
     depends_on:
       mysql:
         condition: service_healthy
