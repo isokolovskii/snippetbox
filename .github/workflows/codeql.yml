@@ -18,6 +18,20 @@ jobs:
       contents: read
       security-events: write
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: "password"
+          MYSQL_DATABASE: "snippetbox"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     strategy:
       fail-fast: false
       matrix:
@@ -34,7 +48,7 @@ jobs:
 
       - name: Autobuild
         env:
-          DB_DSN: "user:pass@tcp(127.0.0.1:3306)/database?parseTime=true"
+          DB_DSN: "root:password@tcp(127.0.0.1:3306)/snippetbox?parseTime=true"
           TLS_KEY_PATH: "./tls/key.pem"
           TLS_CERT_PATH: "./tls/cert.pem"
         uses: github/codeql-action/autobuild@v4
