@@ -6,5 +6,5 @@ import (
 
 // Files - embedded static html and css.
 //
-//go:embed "static"
+//go:embed "static" "html"
 var Files embed.FS

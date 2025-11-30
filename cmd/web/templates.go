@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"time"
 
 	"snippetbox.isokol.dev/internal/models"
+	"snippetbox.isokol.dev/ui"
 )
 
 type (
@@ -33,7 +35,7 @@ type (
 func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	pages, err := filepath.Glob("./ui/html/pages/*.tmpl.html")
+	pages, err := fs.Glob(ui.Files, "html/pages/*.tmpl.html")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read all pages templates: %w", err)
 	}
@@ -57,19 +59,16 @@ func parsePageTemplate(name, page string) (*template.Template, error) {
 	functions := template.FuncMap{
 		"humanDate": humanDate,
 	}
-	tmpl, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl.html")
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse base template: %w", err)
+
+	patterns := []string{
+		"html/base.tmpl.html",
+		"html/partials/*.tmpl.html",
+		page,
 	}
 
-	tmpl, err = tmpl.ParseGlob("./ui/html/partials/*.tmpl.html")
+	tmpl, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse templates for partials: %w", err)
-	}
-
-	tmpl, err = tmpl.ParseFiles(page)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse template %s: %w", name, err)
+		return nil, fmt.Errorf("failed to parse templates: %w", err)
 	}
 
 	return tmpl, nil
