@@ -1,3 +1,4 @@
+-- Create snippets table --
 CREATE TABLE snippets (
     id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(100) NOT NULL,
@@ -6,4 +7,5 @@ CREATE TABLE snippets (
     expires DATETIME NOT NULL
 );
 
+-- Create index for snippets table --
 CREATE INDEX idx_snippets_created ON snippets(created);

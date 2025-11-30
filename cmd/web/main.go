@@ -16,23 +16,35 @@ import (
 )
 
 type (
+	// Application helpers provided as DI.
 	application struct {
-		logger         *slog.Logger
-		repositories   *repositories.Repositories
-		formDecoder    *form.Decoder
+		// Application logger.
+		logger *slog.Logger
+		// Database repositories.
+		repositories *repositories.Repositories
+		// Form decoder instance.
+		formDecoder *form.Decoder
+		// Session manager instance.
 		sessionManager *scs.SessionManager
-		templateCache  map[string]*template.Template
-		debug          bool
+		// Rendered templates cache.
+		templateCache map[string]*template.Template
+		// Server debig config.
+		debug bool
 	}
 )
 
 const (
-	readTimeout         = 5 * time.Second
-	writeTimeout        = 10 * time.Second
-	databasePingTimeout = 20 * time.Second
-	sessionLifetime     = 12 * time.Hour
+	// Server request read timeout.
+	readTimeout = 5 * time.Second
+	// Server response write timeout.
+	writeTimeout = 10 * time.Second
+	// Session lifetime duration.
+	sessionLifetime = 12 * time.Hour
 )
 
+// Server bootstrap. Creates all entities required
+// for server work. Also connects to database and
+// sets configuration for http server.
 func main() {
 	loadedEnv := getEnv()
 
@@ -84,7 +96,7 @@ func main() {
 
 	logger.InfoContext(context.Background(), "starting server", slogKeyAddr, loadedEnv.addr)
 
-	err = srv.ListenAndServeTLS(loadedEnv.tlsCertPath, loadedEnv.tlsKeyPayh)
+	err = srv.ListenAndServeTLS(loadedEnv.tlsCertPath, loadedEnv.tlsKeyPath)
 	logger.ErrorContext(context.Background(), err.Error())
 	panic("unexpected server failure")
 }

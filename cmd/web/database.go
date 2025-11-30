@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
@@ -13,6 +14,12 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
+const (
+	// Timeout for database ping.
+	databasePingTimeout = 20 * time.Second
+)
+
+// Initialize database connection and run migrations.
 func initDb(loadedEnv *env) (*sql.DB, error) {
 	db, err := openDb(loadedEnv.dbDsn)
 	if err != nil {
@@ -29,6 +36,7 @@ func initDb(loadedEnv *env) (*sql.DB, error) {
 	return db, nil
 }
 
+// Open database connection and verify it.
 func openDb(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -56,6 +64,7 @@ func openDb(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
+// Run database migrations.
 func runMigrations(db *sql.DB, migrationDir, databaseName string) error {
 	driver, err := mysql.WithInstance(db, &mysql.Config{
 		DatabaseName: databaseName,

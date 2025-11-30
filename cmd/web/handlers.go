@@ -35,6 +35,7 @@ const (
 	fieldExpires         = "expires"
 )
 
+// Handler for home page.
 func (app *application) home(writer http.ResponseWriter, request *http.Request) {
 	snippets, err := app.repositories.Snippet.Latest(request.Context())
 	if err != nil {
@@ -49,6 +50,7 @@ func (app *application) home(writer http.ResponseWriter, request *http.Request) 
 	app.renderTemplate(writer, request, http.StatusOK, homeTemplateName, data)
 }
 
+// Handler for snippet view page.
 func (app *application) snippetView(writer http.ResponseWriter, request *http.Request) {
 	id, err := strconv.Atoi(request.PathValue("id"))
 
@@ -75,6 +77,7 @@ func (app *application) snippetView(writer http.ResponseWriter, request *http.Re
 	app.renderTemplate(writer, request, http.StatusOK, viewTemplateName, data)
 }
 
+// Handler for snippet create page.
 func (app *application) snippetCreate(writer http.ResponseWriter, request *http.Request) {
 	data := app.newTemplateData(request)
 	data.Form = snippetCreateForm{
@@ -84,6 +87,7 @@ func (app *application) snippetCreate(writer http.ResponseWriter, request *http.
 	app.renderTemplate(writer, request, http.StatusOK, createTemplateName, data)
 }
 
+// Handler for snippet creation request.
 func (app *application) snippetCreatePost(
 	writer http.ResponseWriter,
 	request *http.Request,
@@ -118,6 +122,7 @@ func (app *application) snippetCreatePost(
 	http.Redirect(writer, request, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 
+// Validate snippet creation form.
 func (form *snippetCreateForm) validate() {
 	validator.CheckField(
 		&form.Validator,

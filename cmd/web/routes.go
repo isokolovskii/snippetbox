@@ -9,11 +9,14 @@ import (
 )
 
 type (
+	// File system wrapper.
 	neuteredFileSystem struct {
+		// File system.
 		fs http.FileSystem
 	}
 )
 
+// Server routes configuration.
 func (app *application) routes(staticDir string) http.Handler {
 	mux := http.NewServeMux()
 
@@ -33,6 +36,7 @@ func (app *application) routes(staticDir string) http.Handler {
 	return standard.Then(mux)
 }
 
+// Open file system for read.
 func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
 	file, err := nfs.fs.Open(path)
 	if err != nil {
@@ -58,6 +62,7 @@ func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
 	return file, nil
 }
 
+// Open directory on filesystem for read.
 func (nfs neuteredFileSystem) openDirectory(path string, file http.File) (http.File, error) {
 	index := filepath.Join(path, "index.html")
 

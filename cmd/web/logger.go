@@ -6,15 +6,21 @@ import (
 )
 
 const (
-	slogKeyIP     = "ip"
-	slogKeyProto  = "proto"
+	// Log key for IP.
+	slogKeyIP = "ip"
+	// Log key for request protocol version.
+	slogKeyProto = "proto"
+	// Log key for request method.
 	slogKeyMethod = "method"
-	slogKeyURI    = "uri"
-	slogKeyAddr   = "addr"
-	slogKeyValue  = "value"
-	slogKeyError  = "error"
+	// Log key for request URI.
+	slogKeyURI = "uri"
+	// Log key for request address server listens to.
+	slogKeyAddr = "addr"
+	// Log key for values.
+	slogKeyValue = "value"
 )
 
+// Create app logger with provided configuration.
 func createLogger(loadedEnv *env) *slog.Logger {
 	level := slog.LevelInfo
 	if loadedEnv.debug {
