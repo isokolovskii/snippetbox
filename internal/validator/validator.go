@@ -54,7 +54,7 @@ func CreateNotBlankValidator() ValidationFunction[string] {
 	}
 }
 
-// CreateMaxCharsValidator - maximim characters in field validation.
+// CreateMaxCharsValidator - maximum characters in field validation.
 func CreateMaxCharsValidator(limit int) ValidationFunction[string] {
 	return func(value string) bool {
 		return utf8.RuneCountInString(value) <= limit
