@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	// SnippetRepository - snippets repository.
+	// SnippetRepository - snippets repository for snippet model.
 	SnippetRepository struct {
 		// Database connection.
 		db *sql.DB
