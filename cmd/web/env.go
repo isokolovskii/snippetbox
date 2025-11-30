@@ -17,6 +17,8 @@ type (
 		addr string
 		// Database host. Required value in .env or environment.
 		dbHost string
+		// Database port number.
+		dbPort string
 		// Database user. Required value in .env or environment.
 		dbUser string
 		// Database user password. Required value in .env or environment.
@@ -47,6 +49,7 @@ func getEnv() *env {
 		addr:        readEnvOrDefault("ADDR", ":4000"),
 		debug:       parseEnvBool("DEBUG", "false"),
 		dbHost:      readEnvOrDefault("DB_HOST", ""),
+		dbPort:      readEnvOrDefault("DB_PORT", "3306"),
 		dbUser:      readEnvOrDefault("DB_USER", ""),
 		dbPass:      readEnvOrDefault("DB_PASS", ""),
 		dbName:      readEnvOrDefault("DB_NAME", "snippetbox"),

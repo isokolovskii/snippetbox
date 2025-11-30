@@ -25,10 +25,11 @@ const (
 // Initialize database connection and run migrations.
 func initDb(loadedEnv *env) (*sql.DB, error) {
 	dbDsn := fmt.Sprintf(
-		"%s:%s@%s/%s?parseTime=true",
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
 		loadedEnv.dbUser,
 		loadedEnv.dbPass,
 		loadedEnv.dbHost,
+		loadedEnv.dbPort,
 		loadedEnv.dbName,
 	)
 	db, err := openDb(dbDsn)
@@ -77,10 +78,11 @@ func openDb(dsn string) (*sql.DB, error) {
 // Run database migrations using separate db connection.
 func runMigrations(loadedEnv *env) error {
 	dbDsn := fmt.Sprintf(
-		"%s:%s@%s/%s?multiStatements=true",
+		"%s:%s@tcp(%s:%s)/%s?multiStatements=true",
 		loadedEnv.dbUser,
 		loadedEnv.dbPass,
 		loadedEnv.dbHost,
+		loadedEnv.dbPort,
 		loadedEnv.dbName,
 	)
 	db, err := openDb(dbDsn)
