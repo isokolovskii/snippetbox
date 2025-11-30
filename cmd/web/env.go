@@ -32,7 +32,7 @@ type (
 	}
 )
 
-// Reads env variabled from .env or from system environment
+// Reads env variables from .env or from system environment
 // DB_DSN, TLS_KEY_PATH and TLS_CERT_PATH are required variables
 // If required variables not provided via environment this function
 // will panic.
