@@ -81,7 +81,7 @@ func parseEnvBool(key, defaultValue string) bool {
 	valueStr := readEnvOrDefault(key, defaultValue)
 	value, err := strconv.ParseBool(valueStr)
 	if err != nil {
-		panic(fmt.Sprintf("invalid %s env, should be `true` of `false`, got %s", key, valueStr))
+		panic(fmt.Sprintf("invalid %s env, should be `true` or `false`, got %s", key, valueStr))
 	}
 
 	return value

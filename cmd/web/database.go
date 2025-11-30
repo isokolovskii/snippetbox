@@ -25,7 +25,7 @@ const (
 // Initialize database connection and run migrations.
 func initDb(loadedEnv *env) (*sql.DB, error) {
 	dbDsn := fmt.Sprintf(
-		"%s:%s@%s/%s?parseTime=true&multiStatements=true",
+		"%s:%s@%s/%s?parseTime=true",
 		loadedEnv.dbUser,
 		loadedEnv.dbPass,
 		loadedEnv.dbHost,
@@ -36,7 +36,7 @@ func initDb(loadedEnv *env) (*sql.DB, error) {
 		return nil, fmt.Errorf("unable to open connection to database: %w", err)
 	}
 
-	err = runMigrations(db, loadedEnv.dbName)
+	err = runMigrations(loadedEnv)
 	if err != nil {
 		defer db.Close()
 
@@ -74,10 +74,22 @@ func openDb(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
-// Run database migrations.
-func runMigrations(db *sql.DB, databaseName string) error {
+// Run database migrations using separate db connection.
+func runMigrations(loadedEnv *env) error {
+	dbDsn := fmt.Sprintf(
+		"%s:%s@%s/%s?multiStatements=true",
+		loadedEnv.dbUser,
+		loadedEnv.dbPass,
+		loadedEnv.dbHost,
+		loadedEnv.dbName,
+	)
+	db, err := openDb(dbDsn)
+	if err != nil {
+		return fmt.Errorf("error opening database connection for migrations: %w", err)
+	}
+
 	databaseDriver, err := mysql.WithInstance(db, &mysql.Config{
-		DatabaseName: databaseName,
+		DatabaseName: loadedEnv.dbName,
 	})
 	if err != nil {
 		return fmt.Errorf("error creating migration driver: %w", err)
@@ -89,10 +101,11 @@ func runMigrations(db *sql.DB, databaseName string) error {
 	}
 	defer iofsDriver.Close()
 
-	instance, err := migrate.NewWithInstance("iofs", iofsDriver, databaseName, databaseDriver)
+	instance, err := migrate.NewWithInstance("iofs", iofsDriver, loadedEnv.dbName, databaseDriver)
 	if err != nil {
 		return fmt.Errorf("error creating migration instance: %w", err)
 	}
+	defer instance.Close()
 
 	err = instance.Up()
 	if err != nil {
