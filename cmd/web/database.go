@@ -24,7 +24,14 @@ const (
 
 // Initialize database connection and run migrations.
 func initDb(loadedEnv *env) (*sql.DB, error) {
-	db, err := openDb(loadedEnv.dbDsn)
+	dbDsn := fmt.Sprintf(
+		"%s:%s@%s/%s?parseTime=true&multiStatements=true",
+		loadedEnv.dbUser,
+		loadedEnv.dbPass,
+		loadedEnv.dbHost,
+		loadedEnv.dbName,
+	)
+	db, err := openDb(dbDsn)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open connection to database: %w", err)
 	}

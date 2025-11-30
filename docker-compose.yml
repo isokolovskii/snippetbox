@@ -28,7 +28,10 @@ services:
     environment:
       - ADDR=:4000
       - DEBUG=true
-      - DB_DSN=web:pass@tcp(mysql:3306)/snippetbox?parseTime=true&multiStatements=true
+      - DB_HOST=tcp(mysql:3306)
+      - DB_USER=web
+      - DB_PASS=pass
+      - DB_NAME=snippetbox
       - TLS_KEY_PATH=./tls/key.pem
       - TLS_CERT_PATH=./tls/cert.pem
     depends_on:
