@@ -12,6 +12,22 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
+func initDb(loadedEnv *env) (*sql.DB, error) {
+	db, err := openDb(loadedEnv.dbDsn)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open connection to database: %w", err)
+	}
+
+	err = runMigrations(db, loadedEnv.migrationsDir, loadedEnv.dbName)
+	if err != nil {
+		defer db.Close()
+
+		return nil, fmt.Errorf("unable to run migrations: %w", err)
+	}
+
+	return db, nil
+}
+
 func openDb(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
