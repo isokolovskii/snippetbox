@@ -20,7 +20,7 @@ const (
 	// Route for static files.
 	staticRoute = "/static/"
 	// Route for home page.
-	homeRoute = ""
+	homeRoute = "/"
 	// Route for snippet view.
 	snippetViewRoute = "/snippet/view"
 	// Route for snippet creation.
@@ -43,7 +43,7 @@ func (app *application) routes(staticDir string) http.Handler {
 
 	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
-	mux.Handle("GET "+homeRoute+"/{$}", dynamic.ThenFunc(app.home))
+	mux.Handle("GET "+homeRoute+"{$}", dynamic.ThenFunc(app.home))
 	mux.Handle("GET "+snippetViewRoute+"/{id}", dynamic.ThenFunc(app.snippetView))
 	mux.Handle("GET "+snippetCreateRoute, dynamic.ThenFunc(app.snippetCreate))
 	mux.Handle("POST "+snippetCreateRoute, dynamic.ThenFunc(app.snippetCreatePost))
