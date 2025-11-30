@@ -80,6 +80,7 @@ func runMigrations(db *sql.DB, databaseName string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create iofs source driver: %w", err)
 	}
+	defer iofsDriver.Close()
 
 	instance, err := migrate.NewWithInstance("iofs", iofsDriver, databaseName, databaseDriver)
 	if err != nil {
@@ -94,8 +95,6 @@ func runMigrations(db *sql.DB, databaseName string) error {
 
 		return fmt.Errorf("error running migrations: %w", err)
 	}
-
-	defer iofsDriver.Close()
 
 	return nil
 }
