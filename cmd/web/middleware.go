@@ -112,6 +112,8 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		exists, err := app.repositories.User.Exists(request.Context(), id)
 		if err != nil {
 			app.serverError(writer, request, err)
+
+			return
 		}
 
 		if exists {
