@@ -27,7 +27,6 @@ services:
       - ./tls:/app/tls
     environment:
       - ADDR=:4000
-      - STATIC_DIR=./ui/static/
       - DEBUG=true
       - DB_DSN=web:pass@tcp(mysql:3306)/snippetbox?parseTime=true&multiStatements=true
       - TLS_KEY_PATH=./tls/key.pem
