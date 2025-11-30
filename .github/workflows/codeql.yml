@@ -48,7 +48,7 @@ jobs:
 
       - name: Autobuild
         env:
-          DB_DSN: "root:password@tcp(127.0.0.1:3306)/snippetbox?parseTime=true"
+          DB_DSN: "root:password@tcp(127.0.0.1:3306)/snippetbox?parseTime=true&multiStatements=true"
           TLS_KEY_PATH: "./tls/key.pem"
           TLS_CERT_PATH: "./tls/cert.pem"
         uses: github/codeql-action/autobuild@v4
