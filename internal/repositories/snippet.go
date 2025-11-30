@@ -17,12 +17,21 @@ type (
 	}
 )
 
+const (
+	// SQL query for snippet insertion.
+	snippetInsertQuery = `INSERT INTO snippets (title, content, created, expires)
+	VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))`
+	// SQL query part for select fields on snippets.
+	snippetSelectQueryPart = "SELECT id, title, content, created, expires FROM snippets WHERE expires > UTC_TIMESTAMP()"
+	// SQL query for snippet get.
+	snippetGetQueryPart = " AND id = ?"
+	// SQL query for latest 10 snippets.
+	snippetLatestQueryPart = "ORDER BY id DESC LIMIT 10"
+)
+
 // Insert - insert snippet into database.
 func (m *SnippetRepository) Insert(ctx context.Context, title, content string, expires int) (int, error) {
-	query := `INSERT INTO snippets (title, content, created, expires)
-	VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))`
-
-	result, err := m.db.ExecContext(ctx, query, title, content, expires)
+	result, err := m.db.ExecContext(ctx, snippetInsertQuery, title, content, expires)
 	if err != nil {
 		return 0, fmt.Errorf("error inserting new snippet into database: %w", err)
 	}
@@ -37,10 +46,7 @@ func (m *SnippetRepository) Insert(ctx context.Context, title, content string, e
 
 // Get snippet by ID from database.
 func (m *SnippetRepository) Get(ctx context.Context, id int) (models.Snippet, error) {
-	query := `SELECT id, title, content, created, expires FROM snippets
-	WHERE expires > UTC_TIMESTAMP() AND id = ?`
-
-	row := m.db.QueryRowContext(ctx, query, id)
+	row := m.db.QueryRowContext(ctx, snippetSelectQueryPart+snippetGetQueryPart, id)
 
 	var snippet models.Snippet
 
@@ -56,12 +62,9 @@ func (m *SnippetRepository) Get(ctx context.Context, id int) (models.Snippet, er
 	return snippet, nil
 }
 
-// Latest - get latest 10 snippets from database.
+// Latest - get latest snippets from database.
 func (m *SnippetRepository) Latest(ctx context.Context) ([]models.Snippet, error) {
-	query := `SELECT id, title, content, created, expires FROM snippets
-	WHERE expires > UTC_TIMESTAMP() ORDER BY id DESC LIMIT 10`
-
-	rows, err := m.db.QueryContext(ctx, query)
+	rows, err := m.db.QueryContext(ctx, snippetSelectQueryPart+snippetLatestQueryPart)
 	if err != nil {
 		return nil, fmt.Errorf("error querying latest snippets from database: %w", err)
 	}

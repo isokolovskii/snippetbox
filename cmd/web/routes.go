@@ -16,26 +16,43 @@ type (
 	}
 )
 
+const (
+	// Route for static files.
+	staticRoute = "/static/"
+	// Route for home page.
+	homeRoute = ""
+	// Route for snippet view.
+	snippetViewRoute = "/snippet/view"
+	// Route for snippet creation.
+	snippetCreateRoute = "/snippet/create"
+	// Route for user signup.
+	userSignupRoute = "/user/signup"
+	// Route for user login.
+	userLoginRoute = "/user/login"
+	// Route for user logout.
+	userLogoutRoute = "/user/logout"
+)
+
 // Server routes configuration.
 func (app *application) routes(staticDir string) http.Handler {
 	mux := http.NewServeMux()
 
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir(staticDir)})
 
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("GET "+staticRoute, http.StripPrefix("/static", fileServer))
 
 	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
-	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
-	mux.Handle("GET /snippet/view/{id}", dynamic.ThenFunc(app.snippetView))
-	mux.Handle("GET /snippet/create", dynamic.ThenFunc(app.snippetCreate))
-	mux.Handle("POST /snippet/create", dynamic.ThenFunc(app.snippetCreatePost))
+	mux.Handle("GET "+homeRoute+"/{$}", dynamic.ThenFunc(app.home))
+	mux.Handle("GET "+snippetViewRoute+"/{id}", dynamic.ThenFunc(app.snippetView))
+	mux.Handle("GET "+snippetCreateRoute, dynamic.ThenFunc(app.snippetCreate))
+	mux.Handle("POST "+snippetCreateRoute, dynamic.ThenFunc(app.snippetCreatePost))
 
-	mux.Handle("GET /user/signup", dynamic.ThenFunc(app.userSignup))
-	mux.Handle("POST /user/signup", dynamic.ThenFunc(app.userSignupPost))
-	mux.Handle("GET /user/login", dynamic.ThenFunc(app.userLogin))
-	mux.Handle("POST /user/login", dynamic.ThenFunc(app.userLoginPost))
-	mux.Handle("POST /user/logout", dynamic.ThenFunc(app.userLogoutPost))
+	mux.Handle("GET "+userSignupRoute, dynamic.ThenFunc(app.userSignup))
+	mux.Handle("POST "+userSignupRoute, dynamic.ThenFunc(app.userSignupPost))
+	mux.Handle("GET "+userLoginRoute, dynamic.ThenFunc(app.userLogin))
+	mux.Handle("POST "+userLoginRoute, dynamic.ThenFunc(app.userLoginPost))
+	mux.Handle("POST "+userLogoutRoute, dynamic.ThenFunc(app.userLogoutPost))
 
 	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
 
