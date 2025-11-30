@@ -2,14 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
-	"path/filepath"
 	"text/template"
 	"time"
 
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 
 	"snippetbox.isokol.dev/internal/repositories"
@@ -17,14 +16,12 @@ import (
 
 type (
 	application struct {
-		logger        *slog.Logger
-		repositories  *repositories.Repositories
-		formDecoder   *form.Decoder
-		templateCache map[string]*template.Template
-		debug         bool
-	}
-	neuteredFileSystem struct {
-		fs http.FileSystem
+		logger         *slog.Logger
+		repositories   *repositories.Repositories
+		formDecoder    *form.Decoder
+		sessionManager *scs.SessionManager
+		templateCache  map[string]*template.Template
+		debug          bool
 	}
 )
 
@@ -32,37 +29,20 @@ const (
 	readTimeout         = 5 * time.Second
 	writeTimeout        = 10 * time.Second
 	databasePingTimeout = 20 * time.Second
+	sessionLifetime     = 12 * time.Hour
 )
 
 func main() {
 	loadedEnv := getEnv()
 
-	level := slog.LevelInfo
+	logger := createLogger(loadedEnv)
 
-	if loadedEnv.debug {
-		level = slog.LevelDebug
-	}
-
-	handlerOpts := &slog.HandlerOptions{
-		Level:       level,
-		AddSource:   loadedEnv.debug,
-		ReplaceAttr: nil,
-	}
-	logger := slog.New(slog.NewTextHandler(os.Stdout, handlerOpts))
-
-	db, err := openDb(loadedEnv.dbDsn)
+	db, err := initDb(loadedEnv)
 	if err != nil {
 		logger.ErrorContext(context.Background(), err.Error())
 		panic("Unable to open database connection")
 	}
-
 	defer db.Close()
-
-	err = runMigrations(db, loadedEnv.migrationsDir, loadedEnv.dbName)
-	if err != nil {
-		logger.ErrorContext(context.Background(), err.Error())
-		panic("Unable to run database migrations")
-	}
 
 	templateCache, err := newTemplateCache()
 	if err != nil {
@@ -72,12 +52,17 @@ func main() {
 
 	formDecoder := form.NewDecoder()
 
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = sessionLifetime
+
 	app := &application{
-		logger:        logger,
-		debug:         loadedEnv.debug,
-		repositories:  repositories.CreateRepositories(db),
-		templateCache: templateCache,
-		formDecoder:   formDecoder,
+		logger:         logger,
+		debug:          loadedEnv.debug,
+		repositories:   repositories.CreateRepositories(db),
+		templateCache:  templateCache,
+		formDecoder:    formDecoder,
+		sessionManager: sessionManager,
 	}
 
 	srv := &http.Server{
@@ -94,43 +79,4 @@ func main() {
 	err = srv.ListenAndServe()
 	logger.ErrorContext(context.Background(), err.Error())
 	panic("unexpected server failure")
-}
-
-func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
-	file, err := nfs.fs.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
-	}
-
-	stat, err := file.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get file info: %w", err)
-	}
-
-	if !stat.IsDir() {
-		return file, nil
-	}
-
-	file, err = nfs.openDirectory(path, file)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open directory: %w", err)
-	}
-
-	return file, nil
-}
-
-func (nfs neuteredFileSystem) openDirectory(path string, file http.File) (http.File, error) {
-	index := filepath.Join(path, "index.html")
-
-	_, err := nfs.fs.Open(index)
-	if err != nil {
-		closeErr := file.Close()
-		if closeErr != nil {
-			return nil, fmt.Errorf("failed to close file: %w", closeErr)
-		}
-
-		return nil, fmt.Errorf("failed to open index.html: %w", err)
-	}
-
-	return file, nil
 }

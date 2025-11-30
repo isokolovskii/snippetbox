@@ -1,9 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"path/filepath"
 
 	"github.com/justinas/alice"
+)
+
+type (
+	neuteredFileSystem struct {
+		fs http.FileSystem
+	}
 )
 
 func (app *application) routes(staticDir string) http.Handler {
@@ -13,12 +21,53 @@ func (app *application) routes(staticDir string) http.Handler {
 
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("GET /{$}", app.home)
-	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView)
-	mux.HandleFunc("GET /snippet/create", app.snippetCreate)
-	mux.HandleFunc("POST /snippet/create", app.snippetCreatePost)
+	dynamic := alice.New(app.sessionManager.LoadAndSave)
+
+	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
+	mux.Handle("GET /snippet/view/{id}", dynamic.ThenFunc(app.snippetView))
+	mux.Handle("GET /snippet/create", dynamic.ThenFunc(app.snippetCreate))
+	mux.Handle("POST /snippet/create", dynamic.ThenFunc(app.snippetCreatePost))
 
 	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
 
 	return standard.Then(mux)
+}
+
+func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
+	file, err := nfs.fs.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file: %w", err)
+	}
+
+	stat, err := file.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get file info: %w", err)
+	}
+
+	if !stat.IsDir() {
+		return file, nil
+	}
+
+	file, err = nfs.openDirectory(path, file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open directory: %w", err)
+	}
+
+	return file, nil
+}
+
+func (nfs neuteredFileSystem) openDirectory(path string, file http.File) (http.File, error) {
+	index := filepath.Join(path, "index.html")
+
+	_, err := nfs.fs.Open(index)
+	if err != nil {
+		closeErr := file.Close()
+		if closeErr != nil {
+			return nil, fmt.Errorf("failed to close file: %w", closeErr)
+		}
+
+		return nil, fmt.Errorf("failed to open index.html: %w", err)
+	}
+
+	return file, nil
 }

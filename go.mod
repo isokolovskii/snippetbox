@@ -9,6 +9,8 @@ tool (
 )
 
 require (
+	github.com/alexedwards/scs/mysqlstore v0.0.0-20251002162104-209de6e426de
+	github.com/alexedwards/scs/v2 v2.9.0
 	github.com/go-playground/form/v4 v4.3.0
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/joho/godotenv v1.5.1
