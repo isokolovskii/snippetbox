@@ -12,7 +12,6 @@ import (
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"snippetbox.isokol.dev/migrations"
 )
@@ -89,6 +88,7 @@ func runMigrations(loadedEnv *env) error {
 	if err != nil {
 		return fmt.Errorf("error opening database connection for migrations: %w", err)
 	}
+	defer db.Close()
 
 	databaseDriver, err := mysql.WithInstance(db, &mysql.Config{
 		DatabaseName: loadedEnv.dbName,
