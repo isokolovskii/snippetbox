@@ -11,6 +11,7 @@ import (
 
 type (
 	templateData struct {
+		Flash       string
 		Snippet     *models.Snippet
 		Form        any
 		Snippets    []models.Snippet

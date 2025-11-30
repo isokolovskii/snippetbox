@@ -11,6 +11,10 @@ import (
 	"github.com/go-playground/form/v4"
 )
 
+const (
+	sessionFlashField = "flash"
+)
+
 var ErrTemplateNotFound = errors.New("template not found")
 
 func (app *application) serverError(
@@ -80,9 +84,12 @@ func (app *application) renderTemplate(
 	}
 }
 
-func (*application) newTemplateData(_ *http.Request) *templateData {
+func (app *application) newTemplateData(request *http.Request) *templateData {
+	flash := app.sessionManager.PopString(request.Context(), sessionFlashField)
+
 	return &templateData{
 		CurrentYear: time.Now().Year(),
+		Flash:       flash,
 	}
 }
 
