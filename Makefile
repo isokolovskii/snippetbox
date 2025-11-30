@@ -4,7 +4,7 @@ run:
 
 .PHONY: build
 build:
-	go build ./...
+	go build -o tmp/web ./cmd/web
 
 .PHONY: build-with-coverage
 build-with-coverage:
