@@ -28,7 +28,8 @@ services:
     environment:
       - ADDR=:4000
       - DEBUG=true
-      - DB_HOST=tcp(mysql:3306)
+      - DB_HOST=mysql
+      - DB_PORT=3306
       - DB_USER=web
       - DB_PASS=pass
       - DB_NAME=snippetbox
