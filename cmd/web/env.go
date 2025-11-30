@@ -15,8 +15,12 @@ type (
 	env struct {
 		// Server address.
 		addr string
-		// Database connection.
-		dbDsn string
+		// Database host. Required value in .env or environment.
+		dbHost string
+		// Database user. Required value in .env or environment.
+		dbUser string
+		// Database user password. Required value in .env or environment.
+		dbPass string
 		// Database name. Required value in .env or environment.
 		dbName string
 		// TLS key path. Required value in .env or environment.
@@ -29,7 +33,7 @@ type (
 )
 
 // Reads env variables from .env or from system environment
-// DB_DSN, TLS_KEY_PATH and TLS_CERT_PATH are required variables
+// DB_HOST, DB_USER, DB_PASS, TLS_KEY_PATH and TLS_CERT_PATH are required variables
 // If required variables not provided via environment this function
 // will panic.
 func getEnv() *env {
@@ -42,7 +46,9 @@ func getEnv() *env {
 	return &env{
 		addr:        readEnvOrDefault("ADDR", ":4000"),
 		debug:       parseEnvBool("DEBUG", "false"),
-		dbDsn:       readEnvOrDefault("DB_DSN", ""),
+		dbHost:      readEnvOrDefault("DB_HOST", ""),
+		dbUser:      readEnvOrDefault("DB_USER", ""),
+		dbPass:      readEnvOrDefault("DB_PASS", ""),
 		dbName:      readEnvOrDefault("DB_NAME", "snippetbox"),
 		tlsKeyPath:  readEnvOrDefault("TLS_KEY_PATH", ""),
 		tlsCertPath: readEnvOrDefault("TLS_CERT_PATH", ""),
