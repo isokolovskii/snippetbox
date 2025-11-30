@@ -12,6 +12,7 @@ const (
 	slogKeyURI    = "uri"
 	slogKeyAddr   = "addr"
 	slogKeyValue  = "value"
+	slogKeyError  = "error"
 )
 
 func createLogger(loadedEnv *env) *slog.Logger {
