@@ -31,11 +31,18 @@ format: $(GOLANGCI_LINT_BIN)
 $(GOLANGCI_LINT_BIN):
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v2.6.2
 
+.PHONY: lefthook
+lefthook:
+	go tool lefthook install
+
 .PHONY: create-certs
 create-certs:
 	mkdir -p tls
 	cd tls; \
 	go run $(shell go env GOROOT)/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+
+.PHONY: init
+init: lefthook create-certs
 
 .PHONY: create-migration
 create-migration:
@@ -44,11 +51,11 @@ create-migration:
 
 .PHONY: compose-up
 compose-up:
-	docker compose up
+	docker compose up --watch
 
 .PHONY: compose-build
 compose-build:
-	docker compose --build
+	docker compose up --watch --build
 
 .PHONY: compose-down
 compose-down:

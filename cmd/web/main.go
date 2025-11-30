@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"log/slog"
 	"net/http"
 	"text/template"
@@ -66,6 +67,11 @@ func main() {
 		sessionManager: sessionManager,
 	}
 
+	tlsConfig := &tls.Config{
+		MinVersion:       tls.VersionTLS12,
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
 	srv := &http.Server{
 		Addr:         loadedEnv.addr,
 		Handler:      app.routes(loadedEnv.staticDir),
@@ -73,6 +79,7 @@ func main() {
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		TLSConfig:    tlsConfig,
 	}
 
 	logger.InfoContext(context.Background(), "starting server", slogKeyAddr, loadedEnv.addr)
