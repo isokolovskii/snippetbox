@@ -55,10 +55,7 @@ func getEnv() *env {
 	}
 }
 
-func readEnvOrDefault(params ...string) string {
-	key := params[0]
-	defaultValue := params[1]
-
+func readEnvOrDefault(key, defaultValue string) string {
 	value := os.Getenv(key)
 
 	if value == "" {

@@ -41,6 +41,8 @@ func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
 
 	stat, err := file.Stat()
 	if err != nil {
+		defer file.Close()
+
 		return nil, fmt.Errorf("failed to get file info: %w", err)
 	}
 
@@ -59,7 +61,7 @@ func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
 func (nfs neuteredFileSystem) openDirectory(path string, file http.File) (http.File, error) {
 	index := filepath.Join(path, "index.html")
 
-	_, err := nfs.fs.Open(index)
+	indexFile, err := nfs.fs.Open(index)
 	if err != nil {
 		closeErr := file.Close()
 		if closeErr != nil {
@@ -68,6 +70,7 @@ func (nfs neuteredFileSystem) openDirectory(path string, file http.File) (http.F
 
 		return nil, fmt.Errorf("failed to open index.html: %w", err)
 	}
+	defer indexFile.Close()
 
 	return file, nil
 }
