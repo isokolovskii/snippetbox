@@ -209,12 +209,14 @@ func (form *snippetCreateForm) validate() {
 	)
 }
 
+// Handler for user signup page.
 func (app *application) userSignup(writer http.ResponseWriter, request *http.Request) {
 	data := app.newTemplateData(request)
 	data.Form = userSignupForm{}
 	app.renderTemplate(writer, request, http.StatusOK, signupTemplateName, data)
 }
 
+// Handler for user signup request.
 func (app *application) userSignupPost(writer http.ResponseWriter, request *http.Request) {
 	var form userSignupForm
 
@@ -292,12 +294,14 @@ func (form *userSignupForm) validate() {
 	)
 }
 
+// Handler for user login page.
 func (app *application) userLogin(writer http.ResponseWriter, request *http.Request) {
 	data := app.newTemplateData(request)
 	data.Form = &userLoginForm{}
 	app.renderTemplate(writer, request, http.StatusOK, loginTemplateName, data)
 }
 
+// Handler for user login request.
 func (app *application) userLoginPost(writer http.ResponseWriter, request *http.Request) {
 	var form userLoginForm
 
@@ -370,9 +374,18 @@ func (form *userLoginForm) validate() {
 	)
 }
 
+// Handler for user logout request.
 func (app *application) userLogoutPost(writer http.ResponseWriter, request *http.Request) {
-	_, err := fmt.Fprintln(writer, "Logout the user...")
+	err := app.sessionManager.RenewToken(request.Context())
 	if err != nil {
 		app.serverError(writer, request, err)
+
+		return
 	}
+
+	app.sessionManager.Remove(request.Context(), sessionAuthenticatedUserField)
+
+	app.sessionManager.Put(request.Context(), sessionFlashField, "You've been logged out successfully!")
+
+	http.Redirect(writer, request, homeRoute, http.StatusSeeOther)
 }
