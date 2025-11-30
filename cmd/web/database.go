@@ -17,8 +17,6 @@ import (
 const (
 	// Timeout for database ping.
 	databasePingTimeout = 20 * time.Second
-	// Current migration version.
-	migrationVersion = 3
 )
 
 // Initialize database connection and run migrations.
@@ -28,7 +26,7 @@ func initDb(loadedEnv *env) (*sql.DB, error) {
 		return nil, fmt.Errorf("unable to open connection to database: %w", err)
 	}
 
-	err = runMigrations(db, loadedEnv.migrationsDir, loadedEnv.dbName)
+	err = runMigrations(db, loadedEnv.migrationsDir, loadedEnv.dbName, loadedEnv.migrationVersion)
 	if err != nil {
 		defer db.Close()
 
@@ -67,7 +65,7 @@ func openDb(dsn string) (*sql.DB, error) {
 }
 
 // Run database migrations.
-func runMigrations(db *sql.DB, migrationDir, databaseName string) error {
+func runMigrations(db *sql.DB, migrationDir, databaseName string, migrationVersion uint) error {
 	driver, err := mysql.WithInstance(db, &mysql.Config{
 		DatabaseName: databaseName,
 	})
