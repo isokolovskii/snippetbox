@@ -17,6 +17,8 @@ import (
 const (
 	// Timeout for database ping.
 	databasePingTimeout = 20 * time.Second
+	// Current migration version.
+	migrationVersion = 3
 )
 
 // Initialize database connection and run migrations.
@@ -78,7 +80,7 @@ func runMigrations(db *sql.DB, migrationDir, databaseName string) error {
 		return fmt.Errorf("error creating migration instance: %w", err)
 	}
 
-	err = instance.Up()
+	err = instance.Migrate(migrationVersion)
 	if err != nil {
 		if errors.Is(err, migrate.ErrNoChange) {
 			return nil
