@@ -17,6 +17,8 @@ type (
 		dbDsn         string
 		dbName        string
 		migrationsDir string
+		tlsKeyPayh    string
+		tlsCertPath   string
 		debug         bool
 	}
 )
@@ -28,13 +30,7 @@ func getEnv() *env {
 		slog.Default().InfoContext(context.Background(), "no .env file, will try to get from system env or defaults")
 	}
 
-	addr := readEnvOrDefault("ADDR", ":4000")
-	staticDir := readEnvOrDefault("STATIC_DIR", "./ui/static")
-	dbDSN := readEnvOrDefault("DB_DSN", "")
-	dbName := readEnvOrDefault("DB_NAME", "snippetbox")
-	migrationsDir := readEnvOrDefault("MIGRATIONS_DIR", "migrations")
 	debugStr := readEnvOrDefault("DEBUG", "false")
-
 	debug, err := strconv.ParseBool(debugStr)
 	if err != nil {
 		slog.Default().WarnContext(
@@ -46,12 +42,14 @@ func getEnv() *env {
 	}
 
 	return &env{
-		addr:          addr,
-		staticDir:     staticDir,
+		addr:          readEnvOrDefault("ADDR", ":4000"),
+		staticDir:     readEnvOrDefault("STATIC_DIR", "./ui/static"),
 		debug:         debug,
-		dbDsn:         dbDSN,
-		migrationsDir: migrationsDir,
-		dbName:        dbName,
+		dbDsn:         readEnvOrDefault("DB_DSN", ""),
+		migrationsDir: readEnvOrDefault("MIGRATIONS_DIR", "migrations"),
+		dbName:        readEnvOrDefault("DB_NAME", "snippetbox"),
+		tlsKeyPayh:    readEnvOrDefault("TLS_KEY_PATH", ""),
+		tlsCertPath:   readEnvOrDefault("TLS_CERT_PATH", ""),
 	}
 }
 

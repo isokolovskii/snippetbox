@@ -55,6 +55,7 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = sessionLifetime
+	sessionManager.Cookie.Secure = true
 
 	app := &application{
 		logger:         logger,
@@ -76,7 +77,7 @@ func main() {
 
 	logger.InfoContext(context.Background(), "starting server", slogKeyAddr, loadedEnv.addr)
 
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS(loadedEnv.tlsCertPath, loadedEnv.tlsKeyPayh)
 	logger.ErrorContext(context.Background(), err.Error())
 	panic("unexpected server failure")
 }
