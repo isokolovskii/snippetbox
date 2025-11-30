@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"path/filepath"
-	"text/template"
 	"time"
 
 	"snippetbox.isokol.dev/internal/models"
