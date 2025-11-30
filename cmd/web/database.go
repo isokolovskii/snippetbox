@@ -69,7 +69,7 @@ func openDb(dsn string) (*sql.DB, error) {
 
 // Run database migrations.
 func runMigrations(db *sql.DB, databaseName string) error {
-	databseDriver, err := mysql.WithInstance(db, &mysql.Config{
+	databaseDriver, err := mysql.WithInstance(db, &mysql.Config{
 		DatabaseName: databaseName,
 	})
 	if err != nil {
@@ -81,7 +81,7 @@ func runMigrations(db *sql.DB, databaseName string) error {
 		return fmt.Errorf("failed to create iofs source driver: %w", err)
 	}
 
-	instance, err := migrate.NewWithInstance("iofs", iofsDriver, databaseName, databseDriver)
+	instance, err := migrate.NewWithInstance("iofs", iofsDriver, databaseName, databaseDriver)
 	if err != nil {
 		return fmt.Errorf("error creating migration instance: %w", err)
 	}
