@@ -33,6 +33,8 @@ jobs:
         languages: ${{ matrix.language }}
 
     - name: Autobuild
+      env:
+        DB_DSN: "user:pass@tcp(127.0.0.1:3306)/database?parseTime=true"
       uses: github/codeql-action/autobuild@v3
 
     - name: Perform CodeQL Analysis
