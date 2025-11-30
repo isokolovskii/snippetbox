@@ -292,7 +292,7 @@ func (form *userSignupForm) validate() {
 		validator.CreateMinCharsValidator(passwordMinLength),
 		form.Password,
 		fieldPassword,
-		"This field must be at least 8 characters long",
+		fmt.Sprintf("This field must be at least %d characters long", passwordMinLength),
 	)
 }
 
