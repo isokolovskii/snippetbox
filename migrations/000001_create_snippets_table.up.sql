@@ -5,3 +5,5 @@ CREATE TABLE snippets (
     created DATETIME NOT NULL,
     expires DATETIME NOT NULL
 );
+
+CREATE INDEX idx_snippets_created ON snippets(created);
