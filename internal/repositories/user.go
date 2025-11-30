@@ -94,5 +94,5 @@ func (repository *UserRepository) Authenticate(ctx context.Context, email, passw
 
 // Exists - check if user exists in database.
 func (*UserRepository) Exists(_ int) (bool, error) {
-	return false, nil
+	panic("Unimplemented - will be implemented later")
 }

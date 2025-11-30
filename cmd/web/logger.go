@@ -16,8 +16,6 @@ const (
 	slogKeyURI = "uri"
 	// Log key for request address server listens to.
 	slogKeyAddr = "addr"
-	// Log key for values.
-	slogKeyValue = "value"
 )
 
 // Create app logger with provided configuration.

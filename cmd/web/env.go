@@ -91,12 +91,7 @@ func parseEnvBool(key, defaultValue string) bool {
 	valueStr := readEnvOrDefault(key, defaultValue)
 	value, err := strconv.ParseBool(valueStr)
 	if err != nil {
-		slog.Default().WarnContext(
-			context.Background(),
-			fmt.Sprintf("invalid %s env, falling back to false", key),
-			slogKeyValue, valueStr,
-		)
-		value = false
+		panic(fmt.Sprintf("invalid %s env, should be `true` of `false`, got %s", key, valueStr))
 	}
 
 	return value
@@ -107,12 +102,7 @@ func parseEnvUInt(key, defaultValue string) uint {
 	valueStr := readEnvOrDefault(key, defaultValue)
 	value, err := strconv.ParseUint(valueStr, uintBase, uintBitSize)
 	if err != nil {
-		slog.Default().WarnContext(
-			context.Background(),
-			fmt.Sprintf("invalid %s env, falling back to 0", key),
-			slogKeyValue, valueStr,
-		)
-		value = 0
+		panic(fmt.Sprintf("invalid %s env, should be positive number, got %s", key, valueStr))
 	}
 
 	return uint(value)
