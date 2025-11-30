@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -96,4 +97,28 @@ func preventCSRF(next http.Handler) http.Handler {
 	})
 
 	return csrfHandler
+}
+
+// Middleware for checking authentication status and adding it into request context.
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		id := app.sessionManager.GetInt(request.Context(), sessionAuthenticatedUserField)
+		if id == 0 {
+			next.ServeHTTP(writer, request)
+
+			return
+		}
+
+		exists, err := app.repositories.User.Exists(request.Context(), id)
+		if err != nil {
+			app.serverError(writer, request, err)
+		}
+
+		if exists {
+			ctx := context.WithValue(request.Context(), isAuthenticatedContextKey, true)
+			request = request.WithContext(ctx)
+		}
+
+		next.ServeHTTP(writer, request)
+	})
 }

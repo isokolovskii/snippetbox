@@ -27,6 +27,8 @@ const (
     VALUES(?, ?, ?, UTC_TIMESTAMP())`
 	// SQL query to get user by email.
 	userByEmailQuery = "SELECT id, hashed_password FROM users WHERE email = ?"
+	// SQL query to check if user exists in database.
+	userExistsQuery = "SELECT EXISTS(SELECT true FROM users WHERE id = ?)"
 	// Hash cost for password hashing.
 	passwordHashCost = 12
 	// MySQL error code for duplicated entries.
@@ -93,6 +95,13 @@ func (repository *UserRepository) Authenticate(ctx context.Context, email, passw
 }
 
 // Exists - check if user exists in database.
-func (*UserRepository) Exists(_ int) (bool, error) {
-	panic("Unimplemented - will be implemented later")
+func (repository *UserRepository) Exists(ctx context.Context, id int) (bool, error) {
+	var exists bool
+
+	err := repository.db.QueryRowContext(ctx, userExistsQuery, id).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("error while checking if user exists: %w", err)
+	}
+
+	return exists, nil
 }
