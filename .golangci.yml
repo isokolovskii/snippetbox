@@ -369,7 +369,6 @@ linters:
         - defers
         - directive
         - errorsas
-        - fieldalignment
         - findcall
         - framepointer
         - hostport
@@ -400,7 +399,8 @@ linters:
         - unusedresult
         - unusedwrite
         - waitgroup
-      disable: []
+      disable:
+        - fieldalignment
     grouper:
       const-require-single-const: true
       const-require-grouping: true

@@ -12,16 +12,18 @@ import (
 type (
 	// Template data.
 	templateData struct {
-		// Message for flash messaging.
-		Flash string
 		// Snippet entity.
 		Snippet *models.Snippet
-		// Form for forms refill after error.
-		Form any
 		// Snippets array for showing multiple snippets as list.
 		Snippets []models.Snippet
+		// Form for forms refill after error.
+		Form any
+		// Message for flash messaging.
+		Flash string
 		// Current year.
 		CurrentYear int
+		// User ID.
+		UserID int
 	}
 )
 
