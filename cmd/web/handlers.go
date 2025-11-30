@@ -11,28 +11,67 @@ import (
 )
 
 type (
+	// Snippet creation form data.
 	snippetCreateForm struct {
+		// Extend from validator for form validation.
 		validator.Validator `form:"-"`
 
-		Title   string `form:"title"`
+		// Snippet title in form data.
+		Title string `form:"title"`
+		// Snippet content in form data.
 		Content string `form:"content"`
-		Expires int    `form:"expires"`
+		// Snippet expiration in form data.
+		Expires int `form:"expires"`
+	}
+	// User signup form.
+	userSignupForm struct {
+		// Extend from validator for form validation.
+		validator.Validator `form:"-"`
+
+		// User name in form data.
+		Name string `form:"name"`
+		// User email in form data.
+		Email string `form:"email"`
+		// User plaintext password in form data.
+		Password string `form:"password"`
 	}
 )
 
 const (
-	minID                = 1
-	TitleLengthLimit     = 100
-	ExpiresInDay         = 1
-	ExpiresInWeek        = 7
-	ExpiresInYear        = 365
-	ValidationErrorBlank = "This field cannot be blank"
-	homeTemplateName     = "home.tmpl.html"
-	viewTemplateName     = "view.tmpl.html"
-	createTemplateName   = "create.tmpl.html"
-	fieldTitle           = "title"
-	fieldContent         = "content"
-	fieldExpires         = "expires"
+	// Minimal logical ID for entities.
+	minID = 1
+	// Title length limit.
+	titleLengthLimit = 100
+	// Expiration option - 1 day.
+	expiresInDay = 1
+	// Expiration option - 1 week.
+	expiresInWeek = 7
+	// Expiration option - 1 year.
+	expiresInYear = 365
+	// Blank field validation error text.
+	validationErrorBlank = "This field cannot be blank"
+	// Home template file name.
+	homeTemplateName = "home.tmpl.html"
+	// Snippet view template file name.
+	viewTemplateName = "view.tmpl.html"
+	// Snippet creation template file name.
+	createTemplateName = "create.tmpl.html"
+	// User signup template file name.
+	signupTemplateName = "signup.tmpl.html"
+	// Form field title.
+	fieldTitle = "title"
+	// Form field content.
+	fieldContent = "content"
+	// Form field expires.
+	fieldExpires = "expires"
+	// Form field name.
+	fieldName = "name"
+	// Form field email.
+	fieldEmail = "email"
+	// Form field password.
+	fieldPassword = "password"
+	// Password minimal length limit.
+	passwordMinLength = 8
 )
 
 // Handler for home page.
@@ -81,7 +120,7 @@ func (app *application) snippetView(writer http.ResponseWriter, request *http.Re
 func (app *application) snippetCreate(writer http.ResponseWriter, request *http.Request) {
 	data := app.newTemplateData(request)
 	data.Form = snippetCreateForm{
-		Expires: ExpiresInYear,
+		Expires: expiresInYear,
 	}
 
 	app.renderTemplate(writer, request, http.StatusOK, createTemplateName, data)
@@ -119,7 +158,7 @@ func (app *application) snippetCreatePost(
 	}
 
 	app.sessionManager.Put(request.Context(), sessionFlashField, "Snippet successfully created!")
-	http.Redirect(writer, request, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
+	http.Redirect(writer, request, fmt.Sprintf(snippetViewRoute+"/%d", id), http.StatusSeeOther)
 }
 
 // Validate snippet creation form.
@@ -129,46 +168,115 @@ func (form *snippetCreateForm) validate() {
 		validator.CreateNotBlankValidator(),
 		form.Title,
 		fieldTitle,
-		ValidationErrorBlank,
+		validationErrorBlank,
 	)
 
 	validator.CheckField(
 		&form.Validator,
-		validator.CreateMaxCharsValidator(TitleLengthLimit),
+		validator.CreateMaxCharsValidator(titleLengthLimit),
 		form.Title,
 		fieldTitle,
-		fmt.Sprintf("This field cannot be more than %d characters long", TitleLengthLimit),
+		fmt.Sprintf("This field cannot be more than %d characters long", titleLengthLimit),
 	)
 
 	validator.CheckField(
-		&form.Validator, validator.CreateNotBlankValidator(), form.Content, fieldContent, ValidationErrorBlank)
+		&form.Validator, validator.CreateNotBlankValidator(), form.Content, fieldContent, validationErrorBlank)
 
 	validator.CheckField(
 		&form.Validator,
-		validator.CreatePermittedValueValidator(ExpiresInDay, ExpiresInWeek, ExpiresInYear),
+		validator.CreatePermittedValueValidator(expiresInDay, expiresInWeek, expiresInYear),
 		form.Expires,
 		fieldExpires,
 		fmt.Sprintf(
 			"This field must be either %d, %d or %d",
-			ExpiresInDay,
-			ExpiresInWeek,
-			ExpiresInYear,
+			expiresInDay,
+			expiresInWeek,
+			expiresInYear,
 		),
 	)
 }
 
 func (app *application) userSignup(writer http.ResponseWriter, request *http.Request) {
-	_, err := fmt.Fprintln(writer, "Display a form for signing up a new user...")
-	if err != nil {
-		app.serverError(writer, request, err)
-	}
+	data := app.newTemplateData(request)
+	data.Form = userSignupForm{}
+	app.renderTemplate(writer, request, http.StatusOK, signupTemplateName, data)
 }
 
 func (app *application) userSignupPost(writer http.ResponseWriter, request *http.Request) {
-	_, err := fmt.Fprintln(writer, "Create a new user...")
+	var form userSignupForm
+
+	err := app.decodePostForm(request, &form)
 	if err != nil {
-		app.serverError(writer, request, err)
+		app.clientError(writer, http.StatusBadRequest)
 	}
+
+	form.validate()
+
+	if !form.Valid() {
+		data := app.newTemplateData(request)
+		data.Form = form
+		app.renderTemplate(writer, request, http.StatusUnprocessableEntity, signupTemplateName, data)
+
+		return
+	}
+
+	err = app.repositories.User.Insert(request.Context(), form.Name, form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			form.AddFieldError("email", "Email address is already in use")
+
+			data := app.newTemplateData(request)
+			data.Form = form
+			app.renderTemplate(writer, request, http.StatusUnprocessableEntity, "signup.tmpl", data)
+		} else {
+			app.serverError(writer, request, err)
+		}
+
+		return
+	}
+
+	app.sessionManager.Put(request.Context(), sessionFlashField, "Your signup was successful. Please log in.")
+
+	http.Redirect(writer, request, userLoginRoute, http.StatusSeeOther)
+}
+
+// User signup form validation.
+func (form *userSignupForm) validate() {
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateNotBlankValidator(),
+		form.Name,
+		fieldName,
+		validationErrorBlank,
+	)
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateNotBlankValidator(),
+		form.Email,
+		fieldEmail,
+		validationErrorBlank,
+	)
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateMatchesRegexValidator(validator.EmailRX),
+		form.Email,
+		fieldEmail,
+		"This field must be a valid email address",
+	)
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateNotBlankValidator(),
+		form.Password,
+		fieldPassword,
+		validationErrorBlank,
+	)
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateMinCharsValidator(passwordMinLength),
+		form.Password,
+		fieldPassword,
+		"This field must be at least 8 characters long",
+	)
 }
 
 func (app *application) userLogin(writer http.ResponseWriter, request *http.Request) {

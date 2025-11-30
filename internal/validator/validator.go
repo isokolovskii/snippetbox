@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"regexp"
 	"slices"
 	"strings"
 	"unicode/utf8"
@@ -13,6 +14,13 @@ type (
 	}
 	// ValidationFunction - validation function.
 	ValidationFunction[T comparable] func(T) bool
+)
+
+// EmailRX - email validation regular expression.
+var EmailRX = regexp.MustCompile(
+	"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+" +
+		"@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?" +
+		"(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
 )
 
 // Valid - check if validation succeed.
@@ -66,5 +74,20 @@ func CreateMaxCharsValidator(limit int) ValidationFunction[string] {
 func CreatePermittedValueValidator[T comparable](permittedValues ...T) ValidationFunction[T] {
 	return func(value T) bool {
 		return slices.Contains(permittedValues, value)
+	}
+}
+
+// CreateMinCharsValidator - minimum characters in field validation.
+func CreateMinCharsValidator(limit int) ValidationFunction[string] {
+	return func(value string) bool {
+		return utf8.RuneCountInString(value) >= limit
+	}
+}
+
+// CreateMatchesRegexValidator - checks that provided string value matches provided
+// regular expression.
+func CreateMatchesRegexValidator(regex *regexp.Regexp) ValidationFunction[string] {
+	return func(value string) bool {
+		return regex.MatchString(value)
 	}
 }
