@@ -68,3 +68,18 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		next.ServeHTTP(writer, request)
 	})
 }
+
+// Middleware to require authentication for requests.
+func (app *application) requireAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if !app.isAuthenticated(request) {
+			http.Redirect(writer, request, "/user/login", http.StatusSeeOther)
+
+			return
+		}
+
+		writer.Header().Add("Cache-Control", "no-store")
+
+		next.ServeHTTP(writer, request)
+	})
+}

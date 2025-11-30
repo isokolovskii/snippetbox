@@ -94,12 +94,12 @@ func (app *application) renderTemplate(
 // Helper function for creating template data.
 func (app *application) newTemplateData(request *http.Request) *templateData {
 	flash := app.sessionManager.PopString(request.Context(), sessionFlashField)
-	userID := app.sessionManager.PopInt(request.Context(), sessionAuthenticatedUserField)
+	isAuthenticated := app.isAuthenticated(request)
 
 	return &templateData{
-		CurrentYear: time.Now().Year(),
-		Flash:       flash,
-		UserID:      userID,
+		CurrentYear:     time.Now().Year(),
+		Flash:           flash,
+		IsAuthenticated: isAuthenticated,
 	}
 }
 
@@ -121,4 +121,9 @@ func (app *application) decodePostForm(request *http.Request, destination any) e
 	}
 
 	return nil
+}
+
+// Checks if user is authenticated.
+func (app *application) isAuthenticated(request *http.Request) bool {
+	return app.sessionManager.Exists(request.Context(), sessionAuthenticatedUserField)
 }
