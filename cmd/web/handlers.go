@@ -240,7 +240,7 @@ func (app *application) userSignupPost(writer http.ResponseWriter, request *http
 	err = app.repositories.User.Insert(request.Context(), form.Name, form.Email, form.Password)
 	if err != nil {
 		if errors.Is(err, models.ErrDuplicateEmail) {
-			form.AddFieldError("email", "Email address is already in use")
+			form.AddFieldError(fieldEmail, "Email address is already in use")
 
 			data := app.newTemplateData(request)
 			data.Form = form
@@ -299,7 +299,7 @@ func (form *userSignupForm) validate() {
 // Handler for user login page.
 func (app *application) userLogin(writer http.ResponseWriter, request *http.Request) {
 	data := app.newTemplateData(request)
-	data.Form = &userLoginForm{}
+	data.Form = userLoginForm{}
 	app.renderTemplate(writer, request, http.StatusOK, loginTemplateName, data)
 }
 

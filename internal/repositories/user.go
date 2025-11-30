@@ -53,6 +53,7 @@ func (repository *UserRepository) Insert(ctx context.Context, name, email, passw
 	return nil
 }
 
+// Check if provided error is MySQL duplication error.
 func checkMysqlDuplicationError(err error) error {
 	var mySQLError *mysql.MySQLError
 	if errors.As(err, &mySQLError) {
