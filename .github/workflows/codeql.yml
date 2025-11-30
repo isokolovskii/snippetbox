@@ -41,6 +41,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Generate self-signed certificates
+        run: |
+          mkdir -p tls
+          openssl req -x509 -newkey rsa:4096 -keyout tls/key.pem -out tls/cert.pem \
+          -sha256 -days 365 -nodes -subj "/C=XX/ST=State/L=City/O=Organization/OU=Unit/CN=localhost"
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
