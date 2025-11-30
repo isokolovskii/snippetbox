@@ -156,3 +156,38 @@ func (form *snippetCreateForm) validate() {
 		),
 	)
 }
+
+func (app *application) userSignup(writer http.ResponseWriter, request *http.Request) {
+	_, err := fmt.Fprintln(writer, "Display a form for signing up a new user...")
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
+}
+
+func (app *application) userSignupPost(writer http.ResponseWriter, request *http.Request) {
+	_, err := fmt.Fprintln(writer, "Create a new user...")
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
+}
+
+func (app *application) userLogin(writer http.ResponseWriter, request *http.Request) {
+	_, err := fmt.Fprintln(writer, "Display a form for logging in a user...")
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
+}
+
+func (app *application) userLoginPost(writer http.ResponseWriter, request *http.Request) {
+	_, err := fmt.Fprintln(writer, "Authenticate and login the user...")
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
+}
+
+func (app *application) userLogoutPost(writer http.ResponseWriter, request *http.Request) {
+	_, err := fmt.Fprintln(writer, "Logout the user...")
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
+}
