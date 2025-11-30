@@ -35,6 +35,15 @@ type (
 		// User plaintext password in form data.
 		Password string `form:"password"`
 	}
+	userLoginForm struct {
+		// Extend from validator for form validation.
+		validator.Validator `form:"-"`
+
+		// Email in form data.
+		Email string `form:"email"`
+		// Password in form data.
+		Password string `form:"password"`
+	}
 )
 
 const (
@@ -50,6 +59,8 @@ const (
 	expiresInYear = 365
 	// Blank field validation error text.
 	validationErrorBlank = "This field cannot be blank"
+	// Email format validation error text.
+	validationEmailInvalid = "This field must be a valid email address"
 	// Home template file name.
 	homeTemplateName = "home.tmpl.html"
 	// Snippet view template file name.
@@ -58,6 +69,8 @@ const (
 	createTemplateName = "create.tmpl.html"
 	// User signup template file name.
 	signupTemplateName = "signup.tmpl.html"
+	// Login template file name.
+	loginTemplateName = "login.tmpl.html"
 	// Form field title.
 	fieldTitle = "title"
 	// Form field content.
@@ -261,7 +274,7 @@ func (form *userSignupForm) validate() {
 		validator.CreateMatchesRegexValidator(validator.EmailRX),
 		form.Email,
 		fieldEmail,
-		"This field must be a valid email address",
+		validationEmailInvalid,
 	)
 	validator.CheckField(
 		&form.Validator,
@@ -280,17 +293,81 @@ func (form *userSignupForm) validate() {
 }
 
 func (app *application) userLogin(writer http.ResponseWriter, request *http.Request) {
-	_, err := fmt.Fprintln(writer, "Display a form for logging in a user...")
-	if err != nil {
-		app.serverError(writer, request, err)
-	}
+	data := app.newTemplateData(request)
+	data.Form = &userLoginForm{}
+	app.renderTemplate(writer, request, http.StatusOK, loginTemplateName, data)
 }
 
 func (app *application) userLoginPost(writer http.ResponseWriter, request *http.Request) {
-	_, err := fmt.Fprintln(writer, "Authenticate and login the user...")
+	var form userLoginForm
+
+	err := app.decodePostForm(request, &form)
+	if err != nil {
+		app.clientError(writer, http.StatusBadRequest)
+
+		return
+	}
+
+	form.validate()
+
+	if !form.Valid() {
+		data := app.newTemplateData(request)
+		data.Form = form
+		app.renderTemplate(writer, request, http.StatusUnprocessableEntity, loginTemplateName, data)
+
+		return
+	}
+
+	id, err := app.repositories.User.Authenticate(request.Context(), form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			form.AddNonFieldError("Email or password is incorrect")
+
+			data := app.newTemplateData(request)
+			data.Form = form
+			app.renderTemplate(writer, request, http.StatusUnprocessableEntity, loginTemplateName, data)
+		} else {
+			app.serverError(writer, request, err)
+		}
+
+		return
+	}
+
+	err = app.sessionManager.RenewToken(request.Context())
 	if err != nil {
 		app.serverError(writer, request, err)
+
+		return
 	}
+
+	app.sessionManager.Put(request.Context(), sessionAuthenticatedUserField, id)
+
+	http.Redirect(writer, request, snippetCreateRoute, http.StatusSeeOther)
+}
+
+// User login form validation.
+func (form *userLoginForm) validate() {
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateNotBlankValidator(),
+		form.Email,
+		fieldEmail,
+		validationErrorBlank,
+	)
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateMatchesRegexValidator(validator.EmailRX),
+		form.Email,
+		fieldEmail,
+		validationEmailInvalid,
+	)
+	validator.CheckField(
+		&form.Validator,
+		validator.CreateNotBlankValidator(),
+		form.Password,
+		fieldPassword,
+		validationErrorBlank,
+	)
 }
 
 func (app *application) userLogoutPost(writer http.ResponseWriter, request *http.Request) {

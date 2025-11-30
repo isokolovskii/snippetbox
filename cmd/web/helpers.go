@@ -12,7 +12,10 @@ import (
 )
 
 const (
+	// Field saved in session for showing flash messages.
 	sessionFlashField = "flash"
+	// Field saved in session for user id.
+	sessionAuthenticatedUserField = "authenticatedUserID"
 )
 
 // ErrTemplateNotFound - error returned if required template not found.
@@ -91,10 +94,12 @@ func (app *application) renderTemplate(
 // Helper function for creating template data.
 func (app *application) newTemplateData(request *http.Request) *templateData {
 	flash := app.sessionManager.PopString(request.Context(), sessionFlashField)
+	userID := app.sessionManager.PopInt(request.Context(), sessionAuthenticatedUserField)
 
 	return &templateData{
 		CurrentYear: time.Now().Year(),
 		Flash:       flash,
+		UserID:      userID,
 	}
 }
 

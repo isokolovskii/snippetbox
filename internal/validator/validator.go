@@ -10,7 +10,10 @@ import (
 type (
 	// Validator - validation helper.
 	Validator struct {
+		// FieldErrors - Form fields errors.
 		FieldErrors map[string]string
+		// NonFieldErrors - error not related to form fields.
+		NonFieldErrors []string
 	}
 	// ValidationFunction - validation function.
 	ValidationFunction[T comparable] func(T) bool
@@ -25,7 +28,7 @@ var EmailRX = regexp.MustCompile(
 
 // Valid - check if validation succeed.
 func (validator *Validator) Valid() bool {
-	return len(validator.FieldErrors) == 0
+	return len(validator.FieldErrors) == 0 && len(validator.NonFieldErrors) == 0
 }
 
 // AddFieldError - add error for field after validation.
@@ -39,6 +42,11 @@ func (validator *Validator) AddFieldError(key, message string) {
 	if !exists {
 		validator.FieldErrors[key] = message
 	}
+}
+
+// AddNonFieldError - add errors not related to form fields.
+func (validator *Validator) AddNonFieldError(message string) {
+	validator.NonFieldErrors = append(validator.NonFieldErrors, message)
 }
 
 // CheckField - checks if field is valid using validator and
