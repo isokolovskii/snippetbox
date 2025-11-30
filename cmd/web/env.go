@@ -27,7 +27,7 @@ type (
 		tlsKeyPath string
 		// TLS certificate path. Required value in .env or environment.
 		tlsCertPath string
-		// Version of current migration.
+		// Version of current migration. Required value in .env or environment.
 		migrationVersion uint
 		// Run server in debug mode.
 		debug bool
@@ -42,7 +42,7 @@ const (
 )
 
 // Reads env variables from .env or from system environment
-// DB_DSN, TLS_KEY_PATH and TLS_CERT_PATH are required variables
+// DB_DSN, TLS_KEY_PATH and TLS_CERT_PATH, MIGRATION_VERSION are required variables
 // If required variables not provided via environment this function
 // will panic.
 func getEnv() *env {
@@ -86,7 +86,7 @@ func readEnvOrDefault(key, defaultValue string) string {
 	return value
 }
 
-// Parse specified env variable as boolean and fallback to false for unprocessable values.
+// Parse specified env variable as boolean and will panic for unprocessable values.
 func parseEnvBool(key, defaultValue string) bool {
 	valueStr := readEnvOrDefault(key, defaultValue)
 	value, err := strconv.ParseBool(valueStr)
@@ -97,7 +97,7 @@ func parseEnvBool(key, defaultValue string) bool {
 	return value
 }
 
-// Parse specified env variable as uint and fallback to 0 for unprocessable values.
+// Parse specified env variable as uint and will panic for unprocessable values.
 func parseEnvUInt(key, defaultValue string) uint {
 	valueStr := readEnvOrDefault(key, defaultValue)
 	value, err := strconv.ParseUint(valueStr, uintBase, uintBitSize)
