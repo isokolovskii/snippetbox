@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-playground/form/v4"
+	"github.com/justinas/nosurf"
 )
 
 const (
@@ -94,12 +95,12 @@ func (app *application) renderTemplate(
 // Helper function for creating template data.
 func (app *application) newTemplateData(request *http.Request) *templateData {
 	flash := app.sessionManager.PopString(request.Context(), sessionFlashField)
-	isAuthenticated := app.isAuthenticated(request)
 
 	return &templateData{
 		CurrentYear:     time.Now().Year(),
 		Flash:           flash,
-		IsAuthenticated: isAuthenticated,
+		IsAuthenticated: app.isAuthenticated(request),
+		CSRFToken:       nosurf.Token(request),
 	}
 }
 

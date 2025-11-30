@@ -24,6 +24,8 @@ type (
 		CurrentYear int
 		// User authentication status.
 		IsAuthenticated bool
+		// CRSF token.
+		CSRFToken string
 	}
 )
 
