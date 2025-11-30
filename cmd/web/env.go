@@ -15,8 +15,6 @@ type (
 	env struct {
 		// Server address.
 		addr string
-		// Static files directory.
-		staticDir string
 		// Database connection.
 		dbDsn string
 		// Database name. Required value in .env or environment.
@@ -54,7 +52,6 @@ func getEnv() *env {
 
 	return &env{
 		addr:             readEnvOrDefault("ADDR", ":4000"),
-		staticDir:        readEnvOrDefault("STATIC_DIR", "./ui/static"),
 		debug:            parseEnvBool("DEBUG", "false"),
 		dbDsn:            readEnvOrDefault("DB_DSN", ""),
 		migrationsDir:    readEnvOrDefault("MIGRATIONS_DIR", "migrations"),

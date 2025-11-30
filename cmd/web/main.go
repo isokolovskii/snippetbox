@@ -86,7 +86,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:         loadedEnv.addr,
-		Handler:      app.routes(loadedEnv.staticDir),
+		Handler:      app.routes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,

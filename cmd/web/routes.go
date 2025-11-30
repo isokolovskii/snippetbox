@@ -1,19 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	"path/filepath"
 
 	"github.com/justinas/alice"
-)
 
-type (
-	// File system wrapper.
-	neuteredFileSystem struct {
-		// File system.
-		fs http.FileSystem
-	}
+	"snippetbox.isokol.dev/ui"
 )
 
 const (
@@ -34,12 +26,10 @@ const (
 )
 
 // Server routes configuration.
-func (app *application) routes(staticDir string) http.Handler {
+func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
-	fileServer := http.FileServer(neuteredFileSystem{http.Dir(staticDir)})
-
-	mux.Handle("GET "+staticRoute, http.StripPrefix("/static", fileServer))
+	mux.Handle("GET "+staticRoute, http.FileServerFS(ui.Files))
 
 	dynamic := alice.New(app.sessionManager.LoadAndSave, preventCSRF, app.authenticate)
 
@@ -58,48 +48,4 @@ func (app *application) routes(staticDir string) http.Handler {
 	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
 
 	return standard.Then(mux)
-}
-
-// Open file system for read.
-func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
-	file, err := nfs.fs.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
-	}
-
-	stat, err := file.Stat()
-	if err != nil {
-		defer file.Close()
-
-		return nil, fmt.Errorf("failed to get file info: %w", err)
-	}
-
-	if !stat.IsDir() {
-		return file, nil
-	}
-
-	file, err = nfs.openDirectory(path, file)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open directory: %w", err)
-	}
-
-	return file, nil
-}
-
-// Open directory on filesystem for read.
-func (nfs neuteredFileSystem) openDirectory(path string, file http.File) (http.File, error) {
-	index := filepath.Join(path, "index.html")
-
-	indexFile, err := nfs.fs.Open(index)
-	if err != nil {
-		closeErr := file.Close()
-		if closeErr != nil {
-			return nil, fmt.Errorf("failed to close file: %w", closeErr)
-		}
-
-		return nil, fmt.Errorf("failed to open index.html: %w", err)
-	}
-	defer indexFile.Close()
-
-	return file, nil
 }
