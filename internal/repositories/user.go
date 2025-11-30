@@ -44,7 +44,7 @@ func (repository *UserRepository) Insert(ctx context.Context, name, email, passw
 	if err != nil {
 		mySQLDuplicationError := checkMysqlDuplicationError(err)
 		if mySQLDuplicationError != nil {
-			return fmt.Errorf("database duplication error: %w", err)
+			return fmt.Errorf("database duplication error: %w", mySQLDuplicationError)
 		}
 
 		return fmt.Errorf("unable to create new user: %w", err)

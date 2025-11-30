@@ -223,6 +223,8 @@ func (app *application) userSignupPost(writer http.ResponseWriter, request *http
 	err := app.decodePostForm(request, &form)
 	if err != nil {
 		app.clientError(writer, http.StatusBadRequest)
+
+		return
 	}
 
 	form.validate()
@@ -242,7 +244,7 @@ func (app *application) userSignupPost(writer http.ResponseWriter, request *http
 
 			data := app.newTemplateData(request)
 			data.Form = form
-			app.renderTemplate(writer, request, http.StatusUnprocessableEntity, "signup.tmpl", data)
+			app.renderTemplate(writer, request, http.StatusUnprocessableEntity, signupTemplateName, data)
 		} else {
 			app.serverError(writer, request, err)
 		}

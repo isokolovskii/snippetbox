@@ -26,7 +26,7 @@ const (
 	// SQL query for snippet get.
 	snippetGetQueryPart = " AND id = ?"
 	// SQL query for latest 10 snippets.
-	snippetLatestQueryPart = "ORDER BY id DESC LIMIT 10"
+	snippetLatestQueryPart = " ORDER BY id DESC LIMIT 10"
 )
 
 // Insert - insert snippet into database.
