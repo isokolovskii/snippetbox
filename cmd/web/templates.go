@@ -22,8 +22,8 @@ type (
 		Flash string
 		// Current year.
 		CurrentYear int
-		// User ID.
-		UserID int
+		// User authentication status.
+		IsAuthenticated bool
 	}
 )
 

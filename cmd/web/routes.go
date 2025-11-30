@@ -45,14 +45,15 @@ func (app *application) routes(staticDir string) http.Handler {
 
 	mux.Handle("GET "+homeRoute+"{$}", dynamic.ThenFunc(app.home))
 	mux.Handle("GET "+snippetViewRoute+"/{id}", dynamic.ThenFunc(app.snippetView))
-	mux.Handle("GET "+snippetCreateRoute, dynamic.ThenFunc(app.snippetCreate))
-	mux.Handle("POST "+snippetCreateRoute, dynamic.ThenFunc(app.snippetCreatePost))
-
 	mux.Handle("GET "+userSignupRoute, dynamic.ThenFunc(app.userSignup))
 	mux.Handle("POST "+userSignupRoute, dynamic.ThenFunc(app.userSignupPost))
 	mux.Handle("GET "+userLoginRoute, dynamic.ThenFunc(app.userLogin))
 	mux.Handle("POST "+userLoginRoute, dynamic.ThenFunc(app.userLoginPost))
-	mux.Handle("POST "+userLogoutRoute, dynamic.ThenFunc(app.userLogoutPost))
+
+	protected := dynamic.Append(app.requireAuthentication)
+	mux.Handle("GET "+snippetCreateRoute, protected.ThenFunc(app.snippetCreate))
+	mux.Handle("POST "+snippetCreateRoute, protected.ThenFunc(app.snippetCreatePost))
+	mux.Handle("POST "+userLogoutRoute, protected.ThenFunc(app.userLogoutPost))
 
 	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
 

@@ -2,10 +2,12 @@
 <nav>
   <div>
     <a href='/'>Home</a>
-    <a href='/snippet/create'>Create snippet</a>
+    {{if .IsAuthenticated}}
+      <a href='/snippet/create'>Create snippet</a>
+    {{end}}
   </div>
   <div>
-    {{if .UserID}}
+    {{if .IsAuthenticated}}
       <form action='/user/logout' method='POST'>
         <button>Logout</button>
       </form>
