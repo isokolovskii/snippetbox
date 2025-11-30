@@ -18,20 +18,6 @@ jobs:
       contents: read
       security-events: write
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: "password"
-          MYSQL_DATABASE: "snippetbox"
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     strategy:
       fail-fast: false
       matrix:
@@ -41,23 +27,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate self-signed certificates
-        run: |
-          mkdir -p tls
-          openssl req -x509 -newkey rsa:4096 -keyout tls/key.pem -out tls/cert.pem \
-          -sha256 -days 365 -nodes -subj "/C=XX/ST=State/L=City/O=Organization/OU=Unit/CN=localhost"
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
 
-      - name: Autobuild
-        env:
-          DB_DSN: "root:password@tcp(127.0.0.1:3306)/snippetbox?parseTime=true&multiStatements=true"
-          TLS_KEY_PATH: "./tls/key.pem"
-          TLS_CERT_PATH: "./tls/cert.pem"
-        uses: github/codeql-action/autobuild@v4
+      - name: Build
+        run: go build -v ./...
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
