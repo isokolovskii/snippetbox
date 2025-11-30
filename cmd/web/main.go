@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"html/template"
 	"log/slog"
 	"net/http"
-	"text/template"
 	"time"
 
 	"github.com/alexedwards/scs/mysqlstore"

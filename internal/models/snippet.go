@@ -7,7 +7,7 @@ import (
 type (
 	// Snippet model.
 	Snippet struct {
-		// Create - date of snippet creation.
+		// Created - date of snippet creation.
 		Created time.Time
 		// Expires - date of snippet expiration.
 		Expires time.Time
