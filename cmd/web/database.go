@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
@@ -43,7 +42,11 @@ func openDb(dsn string) (*sql.DB, error) {
 		closeErr := db.Close()
 
 		if closeErr != nil {
-			return nil, fmt.Errorf("failed to close database connection: %w", closeErr)
+			return nil, fmt.Errorf(
+				"failed to close database connection: %w, after failure to verify database connection: %w",
+				closeErr,
+				err,
+			)
 		}
 
 		return nil, fmt.Errorf("failed to verify connection to database: %w", err)
@@ -74,29 +77,5 @@ func runMigrations(db *sql.DB, migrationDir, databaseName string) error {
 		return fmt.Errorf("error running migrations: %w", err)
 	}
 
-	defer afterMigrations(instance)
-
 	return nil
-}
-
-func afterMigrations(instance *migrate.Migrate) {
-	sourceErr, databaseErr := instance.Close()
-
-	if sourceErr != nil {
-		slog.Default().InfoContext(
-			context.Background(),
-			"error while closing migration instance",
-			slogKeyError,
-			sourceErr,
-		)
-	}
-
-	if databaseErr != nil {
-		slog.Default().InfoContext(
-			context.Background(),
-			"database error while closing migration instance",
-			slogKeyError,
-			databaseErr,
-		)
-	}
 }
