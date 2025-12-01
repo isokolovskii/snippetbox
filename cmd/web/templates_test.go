@@ -7,11 +7,36 @@ import (
 
 func TestHumanDate(t *testing.T) {
 	t.Parallel()
-	tm := time.Date(2024, time.March, 17, 10, 15, 0, 0, time.UTC)
-	hd := humanDate(tm)
-	want := "17 Mar 2024 at 10:15"
+	tests := []struct {
+		name string
+		tm   time.Time
+		want string
+	}{
+		{
+			name: "UTC",
+			tm:   time.Date(2024, time.March, 17, 10, 15, 0, 0, time.UTC),
+			want: "17 Mar 2024 at 10:15",
+		},
+		{
+			name: "Empty",
+			tm:   time.Time{},
+			want: "",
+		},
+		{
+			name: "CET",
+			tm:   time.Date(2024, time.March, 17, 10, 15, 0, 0, time.FixedZone("CET", 1*60*60)),
+			want: "17 Mar 2024 at 09:15",
+		},
+	}
 
-	if hd != want {
-		t.Errorf("got %q; want %q", hd, want)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			hd := humanDate(tt.tm)
+
+			if hd != tt.want {
+				t.Errorf("got %q; want %q", hd, tt.want)
+			}
+		})
 	}
 }
