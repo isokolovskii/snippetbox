@@ -16,9 +16,9 @@ const (
 	cspHeader = "default-src 'self'; style-src 'self'" +
 		" fonts.googleapis.com; font-src fonts.gstatic.com"
 	// Referrer Policy header key.
-	reffererPolicyHeaderKey = "Referrer-Policy"
+	referrerPolicyHeaderKey = "Referrer-Policy"
 	// Referrer Policy common header value.
-	reffererPolicyHeader = "origin-when-cross-origin"
+	referrerPolicyHeader = "origin-when-cross-origin"
 	// Content Type Options header key.
 	contentTypeOptionsHeaderKey = "X-Content-Type-Options"
 	// Content Type Options common header value.
@@ -46,7 +46,7 @@ func commonHeaders(next http.Handler) http.Handler {
 		writer.Header().Set(cspHeaderKey,
 			cspHeader)
 
-		writer.Header().Set(reffererPolicyHeaderKey, reffererPolicyHeader)
+		writer.Header().Set(referrerPolicyHeaderKey, referrerPolicyHeader)
 		writer.Header().Set(contentTypeOptionsHeaderKey, contentTypeOptionsHeader)
 		writer.Header().Set(frameOptionsHeaderKey, frameOptionsHeader)
 		writer.Header().Set(xssProtectionHeaderKey, xssProtectionHeader)

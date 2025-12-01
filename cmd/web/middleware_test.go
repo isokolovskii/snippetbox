@@ -36,7 +36,7 @@ func TestCommonHeaders(t *testing.T) {
 	assert.Equal(t, res.Header.Get(cspHeaderKey), expectedValue)
 
 	expectedValue = "origin-when-cross-origin"
-	assert.Equal(t, res.Header.Get(reffererPolicyHeaderKey), expectedValue)
+	assert.Equal(t, res.Header.Get(referrerPolicyHeaderKey), expectedValue)
 
 	expectedValue = "nosniff"
 	assert.Equal(t, res.Header.Get(contentTypeOptionsHeaderKey), expectedValue)
