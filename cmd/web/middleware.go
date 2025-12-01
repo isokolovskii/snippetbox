@@ -9,21 +9,49 @@ import (
 	"github.com/justinas/nosurf"
 )
 
+const (
+	// Content Security Policy header key.
+	cspHeaderKey = "Content-Security-Policy"
+	// Content Security Policy common header value.
+	cspHeader = "default-src 'self'; style-src 'self'" +
+		" fonts.googleapis.com; font-src fonts.gstatic.com"
+	// Referrer Policy header key.
+	reffererPolicyHeaderKey = "Referrer-Policy"
+	// Referrer Policy common header value.
+	reffererPolicyHeader = "origin-when-cross-origin"
+	// Content Type Options header key.
+	contentTypeOptionsHeaderKey = "X-Content-Type-Options"
+	// Content Type Options common header value.
+	contentTypeOptionsHeader = "nosniff"
+	// Frame Options header key.
+	frameOptionsHeaderKey = "X-Frame-Options"
+	// Frame Options common header value.
+	frameOptionsHeader = "deny"
+	// XSS Protection header key.
+	xssProtectionHeaderKey = "X-XSS-Protection"
+	// XSS Protection common header value.
+	xssProtectionHeader = "0"
+	// Server header key.
+	serverHeaderKey = "Server"
+	// Servercommon header value.
+	serverHeader = "Go"
+)
+
 // ErrServerUnexpected - error for unexpected things happening.
 var ErrServerUnexpected = errors.New("unexpected server error")
 
 // Server common headers middleware.
 func commonHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Set("Content-Security-Policy",
-			"default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
+		writer.Header().Set(cspHeaderKey,
+			cspHeader)
 
-		writer.Header().Set("Referrer-Policy", "origin-when-cross-origin")
-		writer.Header().Set("X-Content-Type-Options", "nosniff")
-		writer.Header().Set("X-Frame-Options", "deny")
-		writer.Header().Set("X-XSS-Protection", "0")
+		writer.Header().Set(reffererPolicyHeaderKey, reffererPolicyHeader)
+		writer.Header().Set(contentTypeOptionsHeaderKey, contentTypeOptionsHeader)
+		writer.Header().Set(frameOptionsHeaderKey, frameOptionsHeader)
+		writer.Header().Set(xssProtectionHeaderKey, xssProtectionHeader)
 
-		writer.Header().Set("Server", "Go")
+		writer.Header().Set(serverHeaderKey, serverHeader)
 
 		next.ServeHTTP(writer, request)
 	})
