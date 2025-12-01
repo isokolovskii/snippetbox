@@ -3,6 +3,8 @@ package main
 import (
 	"testing"
 	"time"
+
+	"snippetbox.isokol.dev/internal/assert"
 )
 
 func TestHumanDate(t *testing.T) {
@@ -34,9 +36,7 @@ func TestHumanDate(t *testing.T) {
 			t.Parallel()
 			hd := humanDate(tt.tm)
 
-			if hd != tt.want {
-				t.Errorf("got %q; want %q", hd, tt.want)
-			}
+			assert.Equal(t, hd, tt.want)
 		})
 	}
 }
