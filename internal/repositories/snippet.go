@@ -10,6 +10,15 @@ import (
 )
 
 type (
+	// SnippetRepositoryInterface - interface for snippets repository.
+	SnippetRepositoryInterface interface {
+		// Insert new snippet.
+		Insert(ctx context.Context, title, content string, expires int) (int, error)
+		// Get snippet by ID.
+		Get(ctx context.Context, id int) (models.Snippet, error)
+		// Latest snippets.
+		Latest(ctx context.Context) ([]models.Snippet, error)
+	}
 	// SnippetRepository - snippets repository for snippet model.
 	SnippetRepository struct {
 		// Database connection.

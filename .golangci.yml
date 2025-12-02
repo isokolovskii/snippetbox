@@ -456,6 +456,7 @@ linters:
         - assign
       ignored-files:
         - '.+_test.go'
+        - '.+/mocks/.+'
     modernize:
       disable: []
     musttag:
@@ -485,8 +486,8 @@ linters:
     nonamedreturns:
       report-error-in-defer: true
     paralleltest:
-      ignore-missing: false
-      ignore-missing-subtests: false
+      ignore-missing: true
+      ignore-missing-subtests: true
     perfsprint:
       integer-format: true
       int-conversion: true
@@ -720,6 +721,10 @@ linters:
           - lll
           - revive
           - varnamelen
+          - unparam
+      - path: ".+/mocks/.+"
+        linters:
+          - unparam
 formatters:
   enable:
     - gci

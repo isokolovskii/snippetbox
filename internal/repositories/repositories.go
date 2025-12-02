@@ -8,9 +8,9 @@ type (
 	// Repositories - database repositories.
 	Repositories struct {
 		// Snippets repository.
-		Snippet *SnippetRepository
+		Snippet SnippetRepositoryInterface
 		// Users repository.
-		User *UserRepository
+		User UserRepositoryInterface
 	}
 )
 
