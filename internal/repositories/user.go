@@ -14,6 +14,15 @@ import (
 )
 
 type (
+	// UserRepositoryInterface - interface for user repository.
+	UserRepositoryInterface interface {
+		// Insert - insert new user to database.
+		Insert(ctx context.Context, name, email, password string) error
+		// Authenticate - verify user credentials.
+		Authenticate(ctx context.Context, email, password string) (int, error)
+		// Exists - check if user exists.
+		Exists(ctx context.Context, id int) (bool, error)
+	}
 	// UserRepository - database repository for user model.
 	UserRepository struct {
 		// Database connection.
