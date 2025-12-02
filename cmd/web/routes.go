@@ -23,6 +23,8 @@ const (
 	userLoginRoute = "/user/login"
 	// Route for user logout.
 	userLogoutRoute = "/user/logout"
+	// Route for health check.
+	healthCheckRoute = "/health"
 )
 
 // Server routes configuration.
@@ -30,6 +32,7 @@ func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.Handle("GET "+staticRoute, http.FileServerFS(ui.Files))
+	mux.HandleFunc("GET "+healthCheckRoute, app.healthCheck)
 
 	dynamic := alice.New(app.sessionManager.LoadAndSave, preventCSRF, app.authenticate)
 

@@ -391,3 +391,11 @@ func (app *application) userLogoutPost(writer http.ResponseWriter, request *http
 
 	http.Redirect(writer, request, homeRoute, http.StatusSeeOther)
 }
+
+// Handler for health check.
+func (app *application) healthCheck(writer http.ResponseWriter, request *http.Request) {
+	_, err := writer.Write([]byte("OK"))
+	if err != nil {
+		app.serverError(writer, request, err)
+	}
+}
